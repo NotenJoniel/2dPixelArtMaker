@@ -2,7 +2,7 @@
 
 本ディレクトリには、特定ゲームエンジンに依存しない2Dピクセルアートを **Python (`Pillow`) によるコード描画**で高品質かつ確実に制作・検証するためのコアライブラリとCLIスクリプトを格納しています。
 
-> **実行コマンドの注意**: Windows環境では `py tools/<script>.py`、macOS/Linux環境では `python3 tools/<script>.py` を使用してください。
+> **実行コマンドの注意**: 環境により有効なPythonコマンドが異なります。`py`（Windows Python Launcher）→ `python3` → `python` の順で `Pillow (PIL)` がインポート可能なランタイムを確認して実行してください（例: `py -c "import PIL"` が使えないサンドボックス環境では `python3` や仮想環境の `python` を直接指定）。
 
 ---
 
@@ -10,9 +10,9 @@
 
 | ファイル名 | 種別 | 役割 |
 | :--- | :--- | :--- |
-| `pixel_canvas.py` | Pythonライブラリ | 整数ピクセル描画コアAPI（行幅一致検査付き記号ドットマップ、ブレゼンハム線分、対称楕円、多角形、方向性シェーディング、関節抜き対応1pxアウトライン、拡大プレビュー生成） |
-| `character_blueprints.py` | ライブラリ / CLI | **AI再現性の核**: サイズ規格（`fc_16x16`, `sfc_16x24`, `hd2d_18x32`, `high_32x56`）× テイスト × **サイズ区分（`S/M/L/XL`）× 役割ランク（`hero/party/mob/enemy/midboss/boss`）**の定量仕様と、全プリセット対応の検証済み素体マップを提供する |
-| `lint_character_style.py` | CLIツール | **造形品質リンター（キャラ・モンスター・S/M/L/XL対応）**: 実寸逸脱・接地ラインずれ・首伸び・左右対称きのこ頭・兜や帽子の水平一直線バンド・内部黒横線・色数超過を自動検出する |
+| `pixel_canvas.py` | Pythonライブラリ | 整数ピクセル描画コアAPI（行幅一致検査付き記号ドットマップ、ブレゼンハム線分、対称楕円、塗り漏れピンホールなしの整数多角形、方向性シェーディング、関節抜き対応1pxアウトライン、拡大プレビュー生成） |
+| `character_blueprints.py` | ライブラリ / CLI | **AI再現性の核**: サイズ規格×テイスト×サイズ区分（`S/M/L/XL`）×役割ランク（`hero/party/mob/enemy/midboss/boss`）の定量仕様と、**装備・髪なしのクリーン素体マネキン（`--mannequin`）・武器なし標準素体（`--show`）・分離済み装備オーバーレイ（`--equipped`）**を提供する |
+| `lint_character_style.py` | CLIツール | **造形品質リンター（キャラ・モンスター・S/M/L/XL対応）**: **内部の透過ピンホール（前髪と顔の境界隙間・塗り漏れ穴）**・実寸逸脱・接地ラインずれ・首伸び・左右対称きのこ頭・兜や帽子の水平一直線バンド・内部黒横線・色数超過を自動検出する |
 | `preview_sheet.py` | CLIツール | **多角的プレビュー＆サイズ対比生成**: スプライトシートから拡大グリッド・黒塗りシルエット・4地形（草/土/石/暗所）視認性モック・アニメGIF、および全キャラ＆ボスの共通接地 `scale_lineup_4x.png` を一括出力する |
 | `preview_rig_composite.py` | CLIツール | `<asset_id>_meta.json` と分割パーツPNG群を読み込み、拡大合成ビュー・ピボット＆グリッド確認ビュー・個別パーツ一覧シートを1枚の画像として `workspace/03_preview/` に出力する |
 | `pack_spritesheet.py` | CLIツール | アニメーションの連番フレームPNG群を等間隔グリッドの1枚のスプライトシートPNGに結合し、汎用フレーム定義JSONを同時出力する |
@@ -80,8 +80,9 @@ canvas.save("assets/items/itm_potion_red.png")
 ```powershell
 py tools/character_blueprints.py --list
 py tools/character_blueprints.py --info sfc_16x24 retro_classic --scale M --role hero
-py tools/character_blueprints.py --info sfc_16x24 dark_serious --scale XL --role boss
-py tools/character_blueprints.py --show sfc_16x24 retro_classic down
+py tools/character_blueprints.py --mannequin sfc_16x24 down --role mob
+py tools/character_blueprints.py --show sfc_16x24 cool down
+py tools/character_blueprints.py --show sfc_16x24 cool down --equipped
 py tools/character_blueprints.py --verify
 ```
 

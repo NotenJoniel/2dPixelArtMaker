@@ -10,7 +10,8 @@
    - 最終出力は**等倍（1x）の透過PNG（RGBA）**と、標準化された**汎用JSONメタデータ**（パーツ階層・ピボット座標・Z順・アニメーション定義）で構成する。特定エンジン固有のバイナリや独自形式にロックインさせない。
 2. **「素体ブループリント起点のコード描画」＋「自動スタイル検査＆視覚フィードバック」による再現性保証**
    - アセット生成の基本手法は、Pythonスクリプト（`tools/pixel_canvas.py` 等）による**プログラマティックなピクセル描画**とする。
-   - **白紙からの目分量描画の禁止（最重要）**: 人型キャラクターを描く際は、いきなり空のキャンバスに目分量で矩形やASCIIマップを書いてはならない。必ず `tools/character_blueprints.py`（`py tools/character_blueprints.py --info <size> <taste> --scale <S/M/L/XL> --role <role>` / `--show <size> <taste> <dir>`）から該当する**サイズ規格×テイスト×サイズ区分×役割ランクの検証済み素体・定量仕様**を参照してベース構造を継承すること。
+   - **白紙からの目分量描画の禁止（最重要）**: 人型キャラクターを描く際は、いきなり空のキャンバスに目分量で矩形やASCIIマップを書いてはならない。必ず `tools/character_blueprints.py`（`--info` / `--mannequin` / `--show`）から該当する**サイズ規格×テイスト×サイズ区分×役割ランクの検証済み素体・定量仕様**を参照してベース構造を継承すること。
+     - **素体の使い分け**: 独自の髪型・帽子を起こすキャラや仲間（`party`）・街人（`mob`）には、武器・外ハネ髪・帽子を含まず頭部が肌色で塗られた **`--mannequin <size> <dir> --role <role>`（`get_mannequin()`）** をベースにすると、剣の消し残りや前髪境界の透過穴が発生しない。テイスト別の髪・衣装完成例は `--show <size> <taste> <dir>`（デフォルト武器なし）、斜め45度背負い剣付きの構造確認には `--equipped` を併用する。
    - **日本式2Dキャラ造形7原則の徹底**:
      1. 髪型は左右対称のお椀・きのこ型を禁止し、斜め分けや外ハネ毛束で非対称なシルエットを作る。
      2. デフォルメ頭身（`2頭身`・`2.5頭身`）では**絶対に細い首（縦の隙間）を描かず**、顎の下端ラインを肩・襟の上端へ `0px` 直結させる（首表現は `high_32x56` 等の `5頭身` のみ）。
@@ -70,20 +71,21 @@
    - 対象アセットの台帳 `docs/03_character_list.md`（各アセットの `role`［`hero/party/mob/enemy/midboss/boss`］と `scale`［`S/M/L/XL`］を明記）および個別仕様書（`docs/characters/<id>.md`）
 
 ### Phase 2: 素体ブループリントに基づくコード描画（`workspace/01_raw/` → `workspace/02_work/`）
-1. 制作時は最初に `py tools/character_blueprints.py --info <size_preset> <taste_preset> --scale <S/M/L/XL> --role <role>` および（人型Mの場合は）`--show <size_preset> <taste_preset> down` を実行し、キャンバス寸法・接地原点 `origin`・ピクセル配分を確認する。
+1. 制作時は最初に `tools/character_blueprints.py --info <size_preset> <taste_preset> --scale <S/M/L/XL> --role <role>` を実行し、キャンバス寸法・接地原点 `origin`・ピクセル配分を確認する。人型Mキャラは用途に応じて `--mannequin <size_preset> down --role <role>`（髪・帽子・武器なしのクリーン素体）または `--show <size_preset> <taste_preset> down`（武器なし標準素体、背負い剣例は `--equipped`）を参照する。
 2. `workspace/01_raw/<asset_id>/gen_<asset_id>.py` を作成し、`tools/pixel_canvas.py` を用いて描画する。
 3. トップダウン3/4見下ろしRPGの歩行キャラは、原則として **4方向（`down`, `up`, `right`, `left`）** を同じ接地Y座標（`origin[1] - 1`）で揃えて設計する。
 
 ### Phase 3: 自動スタイル検査と拡大プレビュー視覚セルフレビュー（`workspace/03_preview/`）
-1. `py tools/lint_character_style.py <output.png> --size <size_preset> --taste <taste_preset> --scale <S/M/L/XL> --role <role> --check-ground` を実行し、実寸逸脱・接地ズレ・首伸び・きのこ頭・水平一直線ヘルメット・内部黒横線・色数超過がないことを確認する。
-2. `py tools/preview_sheet.py --sheet <sheet.json> --out-dir workspace/03_preview`（複数体制作時は `--lineup assets` も併用）で拡大グリッド・シルエット・4地形コントラスト・サイズ対比シートを出力し、**必ず `read_file` で画像を視覚確認する**。違和感があればスクリプトを修正して再生成する。
+1. `tools/lint_character_style.py <output.png> --size <size_preset> --taste <taste_preset> --scale <S/M/L/XL> --role <role> --check-ground` を実行し、**内部の透過ピンホール（前髪と顔の境界隙間・塗り漏れ穴）**・実寸逸脱・接地ズレ・首伸び・きのこ頭・水平一直線ヘルメット・内部黒横線・色数超過がないことを確認する。
+2. `tools/preview_sheet.py --sheet <sheet.json> --out-dir workspace/03_preview`（複数体制作時は `--lineup assets` も併用）で拡大グリッド・シルエット・4地形コントラスト・サイズ対比シートを出力し、**必ず `read_file` で画像を視覚確認する**。違和感があればスクリプトを修正して再生成する。
 
 ### Phase 4: `assets/` への配置とフォーマット自動検証
 1. 完成した等倍PNG群・スプライトシート・メタデータJSONを `assets/` の所定パスへ出力する。
-2. `py tools/validate_assets.py assets --palette assets/palettes/master_palette.json` を実行し、全チェックがパスすることを確認する。
+2. `tools/validate_assets.py assets --palette assets/palettes/master_palette.json` を実行し、全チェックがパスすることを確認する。
 
 ---
 
-## 4. コマンド実行時の注意
+## 4. コマンド実行時の注意（Pythonランタイム解決）
 
-- Windows環境では `python` がストア誘導エイリアスになっている場合があるため、`py` ランチャー（例: `py tools/validate_assets.py`）または環境で有効な `python3` を使用すること。
+- Windows環境では `python` がストア誘導エイリアスになっている場合があり、逆に一部のAIサンドボックス実行環境では `py` ランチャーが存在しない場合がある。
+- 作業開始時に **`py` → `python3` → `python`（または既存の `.venv` / システムPythonパス）** の順で `import PIL` が通る有効なPython実行コマンドを1つ特定し、以降のツール実行で一貫して使用すること。

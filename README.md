@@ -56,8 +56,9 @@ AIに無秩序にドット絵コードを書かせると発生しがちな「単
 # Windows (Python Launcher 利用時)
 py tools/validate_assets.py --help
 
-# macOS / Linux / 標準 python コマンド環境
+# macOS / Linux / py ランチャー非搭載のサンドボックス環境
 python3 tools/validate_assets.py --help
+python tools/validate_assets.py --help
 ```
 
 各スクリプトや描画API（`pixel_canvas.py`）の使い方は `tools/README.md` を参照してください。

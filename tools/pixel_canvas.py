@@ -347,36 +347,35 @@ class PixelCanvas:
         fill: ColorSpec = None,
         outline: ColorSpec = None,
     ) -> None:
-        """スキャンライン法によるアンチエイリアスなしの多角形塗りつぶし。"""
-        if len(points) < 3:
+        """アンチエイリアスなし・塗り漏れピンホールなしの整数多角形塗りつぶし＆輪郭描画。"""
+        if len(points) < 3 or (fill is None and outline is None):
             return
-        if fill is not None:
-            fill_rgba = self.palette.resolve(fill)
-            ys = [p[1] for p in points]
-            min_y = max(0, int(min(ys)))
-            max_y = min(self.height - 1, int(max(ys)))
-            n = len(points)
-            for py in range(min_y, max_y + 1):
-                scan_y = py + 0.5
-                xs: list[float] = []
-                for i in range(n):
-                    x1, y1 = points[i]
-                    x2, y2 = points[(i + 1) % n]
-                    if (y1 <= scan_y < y2) or (y2 <= scan_y < y1):
-                        t = (scan_y - y1) / (y2 - y1)
-                        xs.append(x1 + t * (x2 - x1))
-                xs.sort()
-                for i in range(0, len(xs) - 1, 2):
-                    start_x = max(0, int(round(xs[i])))
-                    end_x = min(self.width - 1, int(round(xs[i + 1])) - 1)
-                    for px in range(start_x, end_x + 1):
-                        self._px[px, py] = fill_rgba
+        ipts = [(int(round(p[0])), int(round(p[1]))) for p in points]
+        mask = Image.new("L", (self.width, self.height), 0)
+        draw = ImageDraw.Draw(mask)
+        if fill is not None and outline is not None:
+            draw.polygon(ipts, fill=1, outline=2)
+        elif fill is not None:
+            draw.polygon(ipts, fill=1, outline=1)
+        else:
+            draw.polygon(ipts, fill=None, outline=2)
 
-        if outline is not None:
-            for i in range(len(points)):
-                p1 = points[i]
-                p2 = points[(i + 1) % len(points)]
-                self.draw_line(round(p1[0]), round(p1[1]), round(p2[0]), round(p2[1]), outline)
+        fill_rgba = self.palette.resolve(fill) if fill is not None else None
+        out_rgba = self.palette.resolve(outline) if outline is not None else None
+        mpx = mask.load()
+        xs = [x for x, _ in ipts]
+        ys = [y for _, y in ipts]
+        min_x = max(0, min(xs))
+        max_x = min(self.width - 1, max(xs))
+        min_y = max(0, min(ys))
+        max_y = min(self.height - 1, max(ys))
+        for py in range(min_y, max_y + 1):
+            for px in range(min_x, max_x + 1):
+                v = mpx[px, py]
+                if v == 1 and fill_rgba is not None:
+                    self._px[px, py] = fill_rgba
+                elif v == 2 and out_rgba is not None:
+                    self._px[px, py] = out_rgba
 
     def flood_fill(self, x: int, y: int, color: ColorSpec) -> None:
         """4近傍フラッドフィル（バケツ塗り）。"""

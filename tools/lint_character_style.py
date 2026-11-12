@@ -23,6 +23,7 @@ lint_character_style.py — キャラクター＆モンスターのプロポー�
 from __future__ import annotations
 
 import argparse
+from collections import deque
 import sys
 from pathlib import Path
 from PIL import Image
@@ -33,6 +34,70 @@ from character_blueprints import get_role_spec, get_scale_spec, get_size_spec, g
 def is_near_black(rgb: tuple[int, int, int]) -> bool:
     r, g, b = rgb
     return r <= 30 and g <= 28 and b <= 45
+
+
+def is_dark_border_color(rgb: tuple[int, int, int], outline_policy: str) -> bool:
+    """主線または色トレスの最深境界色として妥当な暗色かを判定する。"""
+    r, g, b = rgb
+    lum = 0.299 * r + 0.587 * g + 0.114 * b
+    threshold = 72.0 if outline_policy == "selout_no_pure_black" else 55.0
+    return lum <= threshold
+
+
+def find_enclosed_transparent_holes(rgba: Image.Image) -> list[list[tuple[int, int]]]:
+    """
+    キャンバス外周から8近傍で到達できない「内部に閉じ込められた完全透明(alpha==0)領域」を抽出する。
+    ドット絵の1px斜め主線（外周と斜めに接するくぼみ）は外周背景として正しく除外される。
+    """
+    w, h = rgba.size
+    px = rgba.load()
+    exterior = [[False] * w for _ in range(h)]
+    q: deque[tuple[int, int]] = deque()
+    dirs8 = ((-1, -1), (0, -1), (1, -1), (-1, 0), (1, 0), (-1, 1), (0, 1), (1, 1))
+
+    for x in range(w):
+        for y in (0, h - 1):
+            if px[x, y][3] == 0 and not exterior[y][x]:
+                exterior[y][x] = True
+                q.append((x, y))
+    for y in range(h):
+        for x in (0, w - 1):
+            if px[x, y][3] == 0 and not exterior[y][x]:
+                exterior[y][x] = True
+                q.append((x, y))
+
+    while q:
+        cx, cy = q.popleft()
+        for dx, dy in dirs8:
+            nx, ny = cx + dx, cy + dy
+            if 0 <= nx < w and 0 <= ny < h and not exterior[ny][nx] and px[nx, ny][3] == 0:
+                exterior[ny][nx] = True
+                q.append((nx, ny))
+
+    visited = [[False] * w for _ in range(h)]
+    holes: list[list[tuple[int, int]]] = []
+    for y in range(h):
+        for x in range(w):
+            if px[x, y][3] == 0 and not exterior[y][x] and not visited[y][x]:
+                comp: list[tuple[int, int]] = []
+                dq: deque[tuple[int, int]] = deque([(x, y)])
+                visited[y][x] = True
+                while dq:
+                    cx, cy = dq.popleft()
+                    comp.append((cx, cy))
+                    for dx, dy in dirs8:
+                        nx, ny = cx + dx, cy + dy
+                        if (
+                            0 <= nx < w
+                            and 0 <= ny < h
+                            and px[nx, ny][3] == 0
+                            and not exterior[ny][nx]
+                            and not visited[ny][nx]
+                        ):
+                            visited[ny][nx] = True
+                            dq.append((nx, ny))
+                holes.append(comp)
+    return holes
 
 
 def lint_sprite_image(
@@ -141,6 +206,44 @@ def lint_sprite_image(
                 f"[{label}] 色トレス推奨規格 ('{size_id}') ですが、濃黒ピクセルが全体の {ratio:.0%} を占めています。"
                 f" 純黒・濃黒主線を減らし、各素材の deep 影色（Sel-Out）へ置き換えてください。"
             )
+
+    # 5b. 内部の孤立透過ピンホール（前髪と顔の境界隙間・ポリゴン塗り漏れ穴）検知（キャラ・モンスター共通）
+    enclosed_holes = find_enclosed_transparent_holes(rgba)
+    center_x = scale_spec["origin"][0]
+    head_core_half_w = max(3, int(scale_spec["width_range"][1] * 0.35))
+    head_y_min = min_y + 2
+    head_y_max = min_y + int(bbox_h * 0.48)
+
+    for comp in enclosed_holes:
+        hole_size = len(comp)
+        cardinal_rgbs: list[tuple[int, int, int]] = []
+        for hx, hy in comp:
+            for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                nx, ny = hx + dx, hy + dy
+                if 0 <= nx < w and 0 <= ny < h and px[nx, ny][3] > 0:
+                    cardinal_rgbs.append(px[nx, ny][:3])
+
+        # (A) 主線で閉じられていない微小ピンホール（1〜4px、周囲4近傍の半数以上に肌・髪・服などの非主線色が直接露出）
+        if hole_size <= 4 and cardinal_rgbs:
+            non_dark_cnt = sum(1 for rgb in cardinal_rgbs if not is_dark_border_color(rgb, policy))
+            if non_dark_cnt * 2 >= len(cardinal_rgbs):
+                errors.append(
+                    f"[{label}] 内部に主線で囲まれていない透過ピンホール（塗り漏れ穴）が検出されました: "
+                    f"座標 {comp[0]} 付近（計{hole_size}px）。前髪と顔の境界やポリゴン継ぎ目の隙間を埋めてください。"
+                )
+                continue
+
+        # (B) 人型キャラの頭部・顔コア領域内に生じた孤立透過穴（暗色に囲まれていても顔・頭内の穴はNG）
+        if category == "character" and hole_size <= 6:
+            in_head_core = all(
+                head_y_min <= hy <= head_y_max and abs(hx - center_x) <= head_core_half_w
+                for hx, hy in comp
+            )
+            if in_head_core:
+                errors.append(
+                    f"[{label}] 頭部・顔領域の内部に孤立した透過穴が検出されました: "
+                    f"座標 {comp[0]} 付近（計{hole_size}px）。前髪・目元・頭部の塗り残しを確認してください。"
+                )
 
     # 以降の人体プロポーション検査は人型キャラクター（category == "character"）のみに適用
     if category != "character":
