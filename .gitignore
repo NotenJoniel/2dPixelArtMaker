@@ -1,0 +1,21 @@
+# OS / Editor generated files
+.DS_Store
+Thumbs.db
+*.swp
+*~
+.vscode/
+.idea/
+
+# Python cache
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Workspace temporary & raw heavy outputs (keep .gitkeep & README.md)
+workspace/01_raw/*
+!workspace/01_raw/.gitkeep
+workspace/02_work/*
+!workspace/02_work/.gitkeep
+workspace/03_preview/*
+!workspace/03_preview/.gitkeep
