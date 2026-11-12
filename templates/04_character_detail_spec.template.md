@@ -9,9 +9,11 @@
 | **アセットID** | `[例: chr_001_hero]` | `assets/characters/<asset_id>/` に対応 |
 | **キャラクター名** | `[例: アレン]` | |
 | **カテゴリ** | `[character / monster]` | |
+| **役割ランク (`role`)** | `[hero / party / mob / enemy / midboss / boss]` | 主役は脱モブ2層造形、mobは引き算設計 |
 | **サイズ規格 (`size_preset`)** | `[sfc_16x24]` | `fc_16x16` / `sfc_16x24` / `hd2d_18x32` / `high_32x56` |
+| **サイズ区分 (`scale`)** | `[M]` | `S`（小型） / `M`（普通） / `L`（大型・巨漢・中ボス） / `XL`（特大・大ボス） |
 | **テイスト (`taste_preset`)** | `[cool]` | `cute` / `cool` / `retro_classic` / `dark_serious` |
-| **キャンバスサイズ** | `[32 x 32]` px | `sfc_16x24` 標準は `32x32`（`hd2d` は `48x48`、`high` は `64x64`） |
+| **キャンバスサイズ / 接地原点** | `[32 x 32]` px / `origin: [16, 28]` | `character_blueprints.py --info <size> <taste> --scale <S/M/L/XL>` 準拠 |
 | **実身長・横幅目安** | `高さ [24] px / 本体幅 [16] px` | `sfc_16x24` 黄金比＝頭13:体6:足5、コア胴体幅6〜8px |
 | **頭身バランス** | `[例: 2.5頭身（標準・首0px顎＝肩直結）]` | `2頭身` / `2.5頭身` / `5頭身` から選択 |
 | **必要方向** | `[4方向: down, up, right, left]` | 横視点ゲームの場合は `[right]` |

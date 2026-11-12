@@ -4,12 +4,17 @@
 
 ---
 
-## 1. 自動検証項目（`validate_assets.py` ＆ `lint_character_style.py` 対応）
+## 1. 自動検証項目（`validate_assets.py` ＆ `lint_character_style.py` ＆ `preview_sheet.py` 対応）
 
-以下の2つのスクリプトを実行し、エラーが `0` 件であることを必須条件とします。
+以下のスクリプトを実行し、エラーが `0` 件であること、および確認プレビューが出力されていることを必須条件とします。
 
 1. **フォーマット＆メタデータ検証**: `py tools/validate_assets.py assets --palette assets/palettes/master_palette.json`
-2. **プロポーション＆造形スタイル検証（キャラ用）**: `py tools/lint_character_style.py <sprite.png> --size <size_preset> --taste <taste_preset>`
+2. **プロポーション＆造形スタイル検証（キャラ・モンスター・S/M/L/XL共通）**:
+   - キャラ: `py tools/lint_character_style.py <sprite.png> --size <size_preset> --taste <taste_preset> --scale <S/M/L/XL> --role <hero/party/mob> --check-ground`
+   - モンスター: `py tools/lint_character_style.py <sprite.png> --category monster --size <size_preset> --taste <taste_preset> --scale <S/M/L/XL> --check-ground`
+3. **視覚レビュー＆サイズ対比シート生成**:
+   - 個別シート＋GIF＋シルエット＋4地形モック: `py tools/preview_sheet.py --sheet <sheet.json> --out-dir workspace/03_preview`
+   - 全体サイズ対比（S/M/L/XL 混在ラインナップ）: `py tools/preview_sheet.py --lineup assets --out-dir workspace/03_preview`
 
 - [ ] **ファイル命名規則**: すべてのファイル・フォルダ名が英小文字・数字・アンダースコア（`snake_case`）のみで構成されているか。
 - [ ] **画像フォーマット**: すべての画像が PNG（RGBA）であり、等倍（1x）解像度で保存されているか（`preview` 用の拡大画像が混入していないか）。
@@ -35,7 +40,10 @@
 - [ ] **既存ゲームIP非酷似チェック（最重要）**: 「シルエット形状 × 配色 × 顔つき・装飾」の組み合わせが、既存の有名ゲームキャラクター（例：ドラクエの水色しずく型＋笑顔スライム等）に酷似していないか。一般名詞モンスターでも独自の形状・コア・配色になっているか。
 - [ ] **頭身とスケール感**: `docs/01_art_direction_and_world.md` で定めた基準タイルサイズ・頭身区分（`2頭身` / `2.5頭身` / `5頭身`）から逸脱していないか。
 - [ ] **首なし直結チェック（2頭身・2.5頭身の場合）**: 頭と肩の間に不自然な「首（縦長の隙間）」が空いていないか。顎の下端がそのまま肩・襟の上端にしっかり乗っているか。
-- [ ] **シルエット識別性**: キャラクター全体を真っ黒に塗りつぶした状態でも、「誰か／何のモンスターか／何の武器を持っているか」が判別できる特徴的なシルエットになっているか。
+- [ ] **主役キャラの「脱・モブ造形」チェック（`role: hero / party`）**: 16-bit以上なのに単色黒棒目になっていないか（白目＋瞳があるか）、兜の縁や帽子のつばが真横の水平一直線になっていないか、衣装が単色1枚布ではなく2層の重ね着感があるか。
+- [ ] **斜め武器・背負い剣の軸一致チェック**: 背中に斜め45度で背負った剣や杖の柄・鍔だけが垂直・水平（`⊥`）に折れ曲がっていないか（刀身の斜め45度延長線上に柄が伸び、鍔が直交する逆45度になっているか）。
+- [ ] **S/M/L/XL スケール対比チェック**: `scale_lineup_4x.png` 上で、小型ザコ(`S`)・標準キャラ／モブ(`M`)・大型(`L`)・大ボス(`XL`)が共通の床ラインに接地し、意図したサイズ差・威圧感が出ているか。
+- [ ] **シルエット識別性**: キャラクター全体を真っ黒に塗りつぶした状態（`*_silhouette_6x.png`）でも、「誰か／何のモンスターか／何の武器を持っているか」が判別できる特徴的なシルエットになっているか。
 - [ ] **脱プログラマーアート**: 真四角や真円をそのまま置いただけの無機質な見た目になっていないか（曲線・テーパー・毛束や布のニュアンスが入っているか）。
 
 ### 2.2 ドット技術・シェーディング

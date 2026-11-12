@@ -109,6 +109,14 @@ class PixelCanvas:
         self.image = Image.new("RGBA", (self.width, self.height), TRANSPARENT)
         self._px = self.image.load()
 
+    @classmethod
+    def from_image(cls, img: Image.Image, palette: Palette | None = None) -> "PixelCanvas":
+        rgba = img.convert("RGBA")
+        canvas = cls(rgba.width, rgba.height, palette=palette)
+        canvas.image = rgba
+        canvas._px = canvas.image.load()
+        return canvas
+
     def clone(self) -> "PixelCanvas":
         c = PixelCanvas(self.width, self.height, self.palette)
         c.image = self.image.copy()
