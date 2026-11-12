@@ -31,6 +31,7 @@
 1. まず `py tools/character_blueprints.py --info [sfc_16x24] [cool]` と `--show [sfc_16x24] [cool] down`（および `up`, `right`, `left`）を実行し、検証済み素体のピクセル寸法（頭:体:足比率・コア胴体幅・目配置）を確認してください。白紙からの目分量描画は行わないでください。
 2. `docs/characters/[chr_001_hero].md` に仕様をまとめた上で、`workspace/01_raw/[chr_001_hero]/gen_[chr_001_hero].py` を実装し、4方向（`down`, `up`, `right`, `left`）の立ち絵と歩行アニメーションを生成してください。
    - 日本式2Dキャラ造形5原則（非対称毛束、首0px直結、コア胴体6〜8pxくびれ、V字・斜めラインと内部色トレス、頬余白1pxの小顔）を徹底してください。
+   - 既存商用ゲームIPの特定キャラクターと「シルエット×配色×象徴モチーフ」が酷似しないよう、オリジナルデザインにしてください。
 3. 出力画像に対して必ず `py tools/lint_character_style.py <sheet.png> --frame [32x32] --size [sfc_16x24] --taste [cool] --strict` を実行してエラー・警告が 0 件であることを確認し、さらに `workspace/03_preview/` の拡大プレビュー画像を視覚確認して微調整してください。
 4. 完成データを `assets/characters/[chr_001_hero]/` に出力し、`py tools/validate_assets.py assets --palette assets/palettes/master_palette.json` をパスさせてください。
 ```
@@ -56,4 +57,15 @@
 
 - 対象アセット: `[例: itm_potion_red (16x16), itm_sword_iron (16x16), env_01_grassland (16x16 3x3タイル)]`
 - `workspace/03_preview/` に8〜12倍拡大プレビュー（キャラとのサイズ対比モック含む）を出力して視覚確認・改善したのち、`assets/` に配置して `py tools/validate_assets.py assets --palette assets/palettes/master_palette.json` を実行してください。
+```
+
+---
+
+## 5. モンスター（敵キャラクター）を既存ゲームIP非酷似のオリジナル造形で制作させる
+
+```text
+`guidelines/01_worldbuilding_and_style.md`（特に「4. 既存ゲームIPへの酷似禁止とオリジナリティ設計ルール」）および `docs/` の仕様に従い、モンスター `[例: mon_001_slime]` を制作してください。
+
+1. 一般名詞のモンスター（スライム、ゴブリン、ドラゴン等）であっても、既存有名タイトルの固有デザイン（例：水色・玉ねぎしずく型・丸目・赤い笑顔口のスライム等）に絶対に酷似させないでください。「シルエット形状」「配色」「核・顔つきモチーフ」のうち最低2要素以上を独自設計し、`docs/characters/[mon_001_slime].md` の「既存IP非酷似・オリジナリティ設計メモ」に明記してください。
+2. `workspace/01_raw/[mon_001_slime]/gen_[mon_001_slime].py` で `idle` と `attack_01` のアニメーションシートを描画し、`workspace/03_preview/` の拡大プレビューを視覚確認・改善した上で `assets/monsters/[mon_001_slime]/` に出力・検証してください。
 ```
