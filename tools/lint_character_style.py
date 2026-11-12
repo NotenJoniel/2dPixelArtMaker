@@ -30,10 +30,55 @@ from PIL import Image
 
 from character_blueprints import get_role_spec, get_scale_spec, get_size_spec, get_taste_spec
 
+REQUIRED_PHASE1_DOCS: tuple[str, ...] = (
+    "docs/01_art_direction_and_world.md",
+    "docs/02_color_palette_spec.md",
+    "docs/03_character_list.md",
+)
+
+
+def check_phase1_spec_gate(target_path: Path) -> list[str]:
+    """
+    対象画像がプロジェクトの workspace/ または assets/ 配下にある場合、
+    Phase 1 の必須仕様書（docs/01〜03）が先に作成済みであるかを検証する。
+    """
+    resolved = target_path.resolve()
+    for anc in resolved.parents:
+        docs_dir = anc / "docs"
+        ws_dir = anc / "workspace"
+        as_dir = anc / "assets"
+        if docs_dir.is_dir() and (ws_dir.is_dir() or as_dir.is_dir()):
+            in_ws = ws_dir.is_dir() and resolved.is_relative_to(ws_dir.resolve())
+            in_as = as_dir.is_dir() and resolved.is_relative_to(as_dir.resolve())
+            if in_ws or in_as:
+                missing: list[str] = []
+                for rel_doc in REQUIRED_PHASE1_DOCS:
+                    dp = anc / rel_doc
+                    if not dp.is_file() or dp.stat().st_size < 80:
+                        missing.append(rel_doc)
+                if missing:
+                    return [
+                        f"Phase 1 仕様書ゲート違反: アセットの描画・検査より先に仕様書を作成してください "
+                        f"(未作成または内容不足: {', '.join(missing)})。"
+                        f" AGENTS.md の手順に従い Phase 1（docs/01〜03 および docs/characters/*.md）を完了させてから再実行してください。"
+                    ]
+            break
+    return []
+
 
 def is_near_black(rgb: tuple[int, int, int]) -> bool:
     r, g, b = rgb
     return r <= 30 and g <= 28 and b <= 45
+
+
+def is_sclera_white(rgb: tuple[int, int, int]) -> bool:
+    r, g, b = rgb
+    return r >= 225 and g >= 225 and b >= 215
+
+
+def is_iris_dark(rgb: tuple[int, int, int]) -> bool:
+    r, g, b = rgb
+    return (0.299 * r + 0.587 * g + 0.114 * b) <= 135.0
 
 
 def is_dark_border_color(rgb: tuple[int, int, int], outline_policy: str) -> bool:
@@ -156,12 +201,14 @@ def lint_sprite_image(
     bbox_w = max_x - min_x + 1
     bbox_h = max_y - min_y + 1
 
-    # 1. 実身長（縦バウンディングボックス）チェック（S/M/L/XL 対応）
+    # 1. 実身長（縦バウンディングボックス）チェック（S/M/L/XL 対応 ＋ 人型キャラの帽子・角余白 +3px 許容）
     min_h, max_h = scale_spec["height_range"]
-    if not (min_h <= bbox_h <= max_h):
+    headgear_margin = 3 if (category == "character" and size_id != "fc_16x16") else 0
+    if not (min_h <= bbox_h <= max_h + headgear_margin):
+        margin_note = f" + 帽子・頭飾り余白{headgear_margin}px" if headgear_margin else ""
         errors.append(
             f"[{label}] 実寸高さ {bbox_h}px が規格 '{size_id}' (scale={scale_id.upper()}) の推奨範囲 "
-            f"({min_h}〜{max_h}px) を外れています。"
+            f"({min_h}〜{max_h}px{margin_note}) を外れています。"
         )
 
     # 2. 横幅チェック（武器・杖・翼の余白として character は +6px、monster L/XL は +4px 許容）
@@ -233,16 +280,18 @@ def lint_sprite_image(
                 )
                 continue
 
-        # (B) 人型キャラの頭部・顔コア領域内に生じた孤立透過穴（暗色に囲まれていても顔・頭内の穴はNG）
+        # (B) 人型キャラの頭部・髪・肩上武器接合領域内に生じた孤立透過穴（X座標によらず全幅で左右対称に検出）
         if category == "character" and hole_size <= 6:
+            head_y_top = min_y + 1
+            in_head_full_span = hole_size <= 4 and all(head_y_top <= hy <= head_y_max for _, hy in comp)
             in_head_core = all(
                 head_y_min <= hy <= head_y_max and abs(hx - center_x) <= head_core_half_w
                 for hx, hy in comp
             )
-            if in_head_core:
+            if in_head_full_span or in_head_core:
                 errors.append(
-                    f"[{label}] 頭部・顔領域の内部に孤立した透過穴が検出されました: "
-                    f"座標 {comp[0]} 付近（計{hole_size}px）。前髪・目元・頭部の塗り残しを確認してください。"
+                    f"[{label}] 頭部・髪・背負い武器接合領域の内部に孤立した透過穴が検出されました: "
+                    f"座標 {comp[0]} 付近（計{hole_size}px）。前髪・目元・柄と髪の境界の隙間を埋めてください。"
                 )
 
     # 以降の人体プロポーション検査は人型キャラクター（category == "character"）のみに適用
@@ -362,6 +411,47 @@ def lint_sprite_image(
                     f"眉間への1px V字ブリッジ・斜め被り・前髪の覗きを入れることを推奨します。"
                 )
 
+    # 10. 2行目元（白目＋瞳）の上下行X座標ズレ（寄り目・斜視崩れ）検知
+    if role_id in ("hero", "party") and size_id != "fc_16x16" and scale_id.upper() == "M":
+        min_torso_legs_h = {"sfc_16x24": 12, "hd2d_18x32": 19, "high_32x56": 39}.get(size_id, 12)
+        eye_y_min = min_y + 2
+        eye_y_max = min(min_y + int(bbox_h * 0.56), max_y - min_torso_legs_h)
+        eye_runs_by_y: dict[int, list[tuple[int, int]]] = {}
+
+        for y in range(max(0, eye_y_min), min(h, eye_y_max + 1)):
+            runs: list[tuple[int, int]] = []
+            x = min_x
+            while x <= max_x:
+                r, g, b, a = px[x, y]
+                if a > 0 and is_sclera_white((r, g, b)):
+                    x0 = x
+                    while x + 1 <= max_x and px[x + 1, y][3] > 0 and is_sclera_white(px[x + 1, y][:3]):
+                        x += 1
+                    x1 = x
+                    if 1 <= (x1 - x0 + 1) <= 2:
+                        has_dark_pupil_adj = False
+                        for nx in (x0 - 1, x1 + 1):
+                            if 0 <= nx < w and px[nx, y][3] > 0 and is_iris_dark(px[nx, y][:3]):
+                                has_dark_pupil_adj = True
+                                break
+                        if has_dark_pupil_adj:
+                            runs.append((x0, x1))
+                x += 1
+            if runs:
+                eye_runs_by_y[y] = runs
+
+        for y in sorted(eye_runs_by_y.keys()):
+            if (y + 1) in eye_runs_by_y:
+                r_top = eye_runs_by_y[y]
+                r_bot = eye_runs_by_y[y + 1]
+                if len(r_top) == len(r_bot) and len(r_top) in (1, 2) and r_top != r_bot:
+                    errors.append(
+                        f"[{label}] 目の白目（ハイライト）X座標が上下の行で横にズレています "
+                        f"(y={y}: {r_top} vs y={y + 1}: {r_bot})。"
+                        f" ASCIIマップ編集時の列ズレ（寄り目・斜視崩れ）を防ぐため、両行の白目・瞳の列位置を垂直に揃えてください。"
+                    )
+                    break
+
     return errors, warnings
 
 
@@ -392,6 +482,7 @@ def main() -> int:
     parser.add_argument("--check-ground", action="store_true", help="足底・下端が規格の標準接地Y座標(origin[1]-1)に一致しているかも検証")
     parser.add_argument("--ground-y", type=int, default=None, help="任意の接地Y座標を明示指定して検証")
     parser.add_argument("--strict", action="store_true", help="警告(WARN)もエラー終了コードとして扱う")
+    parser.add_argument("--skip-docs-check", action="store_true", help="単体テスト用に Phase 1 仕様書（docs/01〜03）の存在チェックを省略")
     args = parser.parse_args()
 
     if not args.image.exists():
@@ -428,6 +519,8 @@ def main() -> int:
         ground_y_override=args.ground_y,
         label=args.image.name,
     )
+    if not args.skip_docs_check:
+        errors = check_phase1_spec_gate(args.image) + errors
 
     spec_tag = f"{args.size} x {args.taste} | {category} | scale={scale_id} | role={role_id}"
     for w_msg in warnings:

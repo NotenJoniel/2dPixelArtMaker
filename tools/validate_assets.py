@@ -25,6 +25,11 @@ from pixel_canvas import Palette, parse_hex_color
 
 SNAKE_CASE_RE = re.compile(r"^[a-z0-9_]+(\.[a-z0-9_]+)?$")
 IGNORED_FILES = {".gitkeep", "README.md"}
+REQUIRED_PHASE1_DOCS: tuple[str, ...] = (
+    "docs/01_art_direction_and_world.md",
+    "docs/02_color_palette_spec.md",
+    "docs/03_character_list.md",
+)
 
 
 class Validator:
@@ -34,11 +39,13 @@ class Validator:
         default_palette: Palette | None = None,
         chroma_hex: str = "#FF00FF",
         allow_semitransparent: bool = False,
+        skip_docs_check: bool = False,
     ) -> None:
         self.root_dir = root_dir
         self.default_palette = default_palette
         self.chroma_rgb = parse_hex_color(chroma_hex)[:3]
         self.allow_semitransparent = allow_semitransparent
+        self.skip_docs_check = skip_docs_check
         self.errors: list[str] = []
         self.checked_pngs = 0
         self.checked_jsons = 0
@@ -165,7 +172,8 @@ class Validator:
             return
 
         with Image.open(img_path) as im:
-            actual_size = list(im.size)
+            sheet_rgba = im.convert("RGBA")
+            actual_size = list(sheet_rgba.size)
 
         declared_size = data.get("sheet_size")
         if declared_size != actual_size:
@@ -176,6 +184,8 @@ class Validator:
         if cw <= 0 or ch <= 0:
             self.err(meta_path, f"Invalid cell_size: {data.get('cell_size')}")
             return
+
+        is_character = ("characters" in meta_path.parts) or meta_path.name.startswith("chr_")
 
         for anim_name, anim in data.get("animations", {}).items():
             row = int(anim.get("row", 0))
@@ -191,6 +201,51 @@ class Validator:
                     meta_path,
                     f"Animation '{anim_name}' exceeds sheet bounds ({req_w}x{req_h} > {actual_size[0]}x{actual_size[1]}).",
                 )
+                continue
+
+            if frames >= 2:
+                cell_bytes: list[bytes] = []
+                for idx in range(frames):
+                    col = start_col + idx
+                    x0 = col * (cw + pad)
+                    y0 = row * (ch + pad)
+                    cell_bytes.append(sheet_rgba.crop((x0, y0, x0 + cw, y0 + ch)).tobytes())
+
+                if len(set(cell_bytes)) == 1:
+                    self.err(
+                        meta_path,
+                        f"Animation '{anim_name}' has {frames} frames, but all frames are pixel-identical (no motion).",
+                    )
+                elif (
+                    is_character
+                    and anim_name.startswith(("walk", "run"))
+                    and frames >= 4
+                    and frames % 2 == 0
+                    and cell_bytes[: frames // 2] == cell_bytes[frames // 2 :]
+                ):
+                    self.err(
+                        meta_path,
+                        f"Animation '{anim_name}' repeats a 2-frame cycle twice (frame 0==2 & frame 1==3: one-legged hop). "
+                        f"Alternate left/right foot stride between frame 0 and frame 2 (see: py tools/character_blueprints.py --walk sfc_16x24 right).",
+                    )
+
+    def _check_phase1_docs(self) -> None:
+        if self.skip_docs_check or (self.checked_pngs == 0 and self.checked_jsons == 0):
+            return
+        proj_root = self.root_dir.resolve().parent
+        docs_dir = proj_root / "docs"
+        if not docs_dir.is_dir():
+            return
+        missing: list[str] = []
+        for rel_doc in REQUIRED_PHASE1_DOCS:
+            dp = proj_root / rel_doc
+            if not dp.is_file() or dp.stat().st_size < 80:
+                missing.append(rel_doc)
+        if missing:
+            self.errors.insert(
+                0,
+                f"Phase 1 spec gate violation: create specification docs BEFORE generating assets (missing/incomplete: {', '.join(missing)}).",
+            )
 
     def run(self) -> int:
         if not self.root_dir.exists():
@@ -234,6 +289,8 @@ class Validator:
                 elif "animations" in data and "cell_size" in data:
                     self.check_spritesheet_meta(path, data)
 
+        self._check_phase1_docs()
+
         if self.errors:
             print(f"[FAIL] Found {len(self.errors)} validation error(s) in '{self.root_dir}':")
             for e in self.errors:
@@ -252,6 +309,7 @@ def main() -> int:
     parser.add_argument("target", nargs="?", type=Path, default=Path("assets"), help="Target directory to validate (default: assets)")
     parser.add_argument("--palette", type=Path, help="Master palette (.json or .hex) to enforce across all PNGs")
     parser.add_argument("--allow-semitransparent", action="store_true", help="Allow semi-transparent alpha globally")
+    parser.add_argument("--skip-docs-check", action="store_true", help="Skip Phase 1 docs/01..03 existence check")
     args = parser.parse_args()
 
     pal = Palette.from_file(args.palette) if args.palette else None
@@ -259,6 +317,7 @@ def main() -> int:
         root_dir=args.target,
         default_palette=pal,
         allow_semitransparent=args.allow_semitransparent,
+        skip_docs_check=args.skip_docs_check,
     )
     return validator.run()
 

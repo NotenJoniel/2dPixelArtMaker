@@ -13,8 +13,8 @@
    - `PixelCanvas.draw_ascii_map()` は行ごとの文字数不一致を自動検出して即時エラー化するため、LLMがテキストマップ編集時に起こしやすい「1列ズレ事故」を物理的に防ぎます。
 3. **3層ガードレールによるモデル非依存の品質維持**
    - **第1層（選択式プリセットと定量数値化）**: 「ファミコン風」「スーファミ風」などの**サイズ規格（`size_preset`）**と、「かわいい系」「かっこいい系」などの**デザインテイスト（`taste_preset`）**を選択式にし、頭:体:足のピクセル数・コア胴体幅・目のドット構成を数値で固定します。
-   - **第2層（素体ブループリント `tools/character_blueprints.py`）**: AIが白紙キャンバスから目分量で描いて頭身やバランスを崩すのを防ぐため、検証済みの日本式ゲーム素体マップをベースに衣装・髪型を展開させます。
-   - **第3層（造形リンター `tools/lint_character_style.py` ＋ 視覚確認）**: サイズ間延び・寸胴・首伸び・左右完全対称のきのこ頭・内部黒横線を数値検査で自動検出し、さらに拡大プレビュー画像の目視確認を必須化します。
+   - **第2層（素体＆歩行ブループリント `tools/character_blueprints.py`）**: AIが白紙キャンバスから目分量で描いて頭身・横向き姿勢・大型ボスの立体感を崩すのを防ぐため、検証済みの日本式ゲーム素体（`M` 人型4方向・`L/XL` 大型ボス構造素体）および **SFC品質の4方向×4コマ歩行サイクル素体（`--walk`）** を起点に衣装・髪型・動きを展開させます。
+   - **第3層（造形・仕様ゲートリンター `tools/lint_character_style.py` ＆ `validate_assets.py` ＋ 視覚確認）**: Phase 1 仕様書（`docs/01〜03`）未作成でのフライング描画ブロック、頭幅全域の透過ピンホール、縦2px目の上下1px横ズレ（斜視バグ）、サイズ間延び・寸胴・首伸び・左右完全対称きのこ頭・内部黒横線、および4コマ歩行の「2コマ反復（片足ケンケン）」を機械検査で自動検出し、さらに拡大プレビュー画像の目視確認を必須化します。
 
 ---
 
@@ -53,11 +53,12 @@
 - **任意項目（空欄＝「AIおまかせ」で自動補完）**:
   - 具体的な画面解像度指定、主線の好み、キーカラー・色数制限、左右反転の可否など。
 
-### Phase 1: 詳細仕様書への展開（`templates/` → `docs/`）
-- Phase 0 の回答と `tools/character_blueprints.py` の定量仕様から、`docs/01_art_direction_and_world.md`、`docs/02_color_palette_spec.md`（実体JSONは `assets/palettes/`）、および対象アセットの仕様書を作成します。
+### Phase 1: 詳細仕様書への展開（`templates/` → `docs/`）【描画前の完了必須ゲート】
+- **コード描画（Phase 2）へ進む前に必ず本フェーズを完了させます**（描画スクリプトを先に書いて仕様書をあと書きする順序逆転は禁止であり、`lint_character_style.py` / `validate_assets.py` が `docs/01〜03` の存在と記述量を検査してブロックします）。
+- Phase 0 の回答と `tools/character_blueprints.py` の定量仕様から、`docs/01_art_direction_and_world.md`、`docs/02_color_palette_spec.md`（実体JSONは `assets/palettes/`）、台帳 `docs/03_character_list.md`、および対象アセットの個別仕様書（`docs/characters/<id>.md` 等）を先に確定・保存します。
 
-### Phase 2: 素体ブループリントに基づくコード描画（`workspace/01_raw/` → `workspace/02_work/`）
-- `py tools/character_blueprints.py --show <size_preset> <taste_preset> <dir>` で基準素体を確認し、頭:体:足の比率とコア胴体幅を守って `workspace/01_raw/<asset_id>/gen_<asset_id>.py` を実装します。
+### Phase 2: 素体＆歩行ブループリントに基づくコード描画（`workspace/01_raw/` → `workspace/02_work/`）
+- 人型キャラ（`M`）は `--mannequin <size_preset> <dir> --role <role>` または `--show <size_preset> <taste_preset> <dir>`、大型ボス（`L/XL`）は `--mannequin <size_preset> down --scale <L|XL> --role boss`、歩行アニメは `--walk <size_preset> <dir>` で検証済み素体を確認し、頭:体:足の比率・直立側面姿勢・左右交互の4コマ歩行を守って `workspace/01_raw/<asset_id>/gen_<asset_id>.py` を実装します。
 
 ### Phase 3: 自動スタイル検査とセルフレビュー（`workspace/03_preview/`）
 - `py tools/lint_character_style.py` で造形アンチパターンがないか機械検査した後、`workspace/03_preview/` に4倍〜8倍拡大プレビュー（チェッカー背景・グリッド・ピボット付き）を出力し、AI自身が画像を読み取ってディテールを磨き上げます。

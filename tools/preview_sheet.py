@@ -111,6 +111,19 @@ def generate_sheet_previews(sheet_json_path: Path, out_dir: Path, scale: int = 8
             x0 = col * (cw + pad)
             y0 = row * (ch + pad)
             frames.append(sheet.crop((x0, y0, x0 + cw, y0 + ch)))
+        if (
+            asset_id.startswith("chr_")
+            and anim_name.startswith(("walk", "run"))
+            and len(frames) >= 4
+            and len(frames) % 2 == 0
+        ):
+            half = len(frames) // 2
+            if [f.tobytes() for f in frames[:half]] == [f.tobytes() for f in frames[half:]]:
+                print(
+                    f"[PREVIEW WARN] {asset_id}/{anim_name}: frame 0==2 & frame 1==3 (2-frame hop duplication detected!). "
+                    f"Alternate left/right foot stride (see: py tools/character_blueprints.py --walk sfc_16x24 right).",
+                    file=sys.stderr,
+                )
         ordered_anims.append((anim_name, a_spec, frames))
 
     if not ordered_anims:

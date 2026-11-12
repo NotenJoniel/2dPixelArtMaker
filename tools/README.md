@@ -11,12 +11,12 @@
 | ファイル名 | 種別 | 役割 |
 | :--- | :--- | :--- |
 | `pixel_canvas.py` | Pythonライブラリ | 整数ピクセル描画コアAPI（行幅一致検査付き記号ドットマップ、ブレゼンハム線分、対称楕円、塗り漏れピンホールなしの整数多角形、方向性シェーディング、関節抜き対応1pxアウトライン、拡大プレビュー生成） |
-| `character_blueprints.py` | ライブラリ / CLI | **AI再現性の核**: サイズ規格×テイスト×サイズ区分（`S/M/L/XL`）×役割ランク（`hero/party/mob/enemy/midboss/boss`）の定量仕様と、**装備・髪なしのクリーン素体マネキン（`--mannequin`）・武器なし標準素体（`--show`）・分離済み装備オーバーレイ（`--equipped`）**を提供する |
-| `lint_character_style.py` | CLIツール | **造形品質リンター（キャラ・モンスター・S/M/L/XL対応）**: **内部の透過ピンホール（前髪と顔の境界隙間・塗り漏れ穴）**・実寸逸脱・接地ラインずれ・首伸び・左右対称きのこ頭・兜や帽子の水平一直線バンド・内部黒横線・色数超過を自動検出する |
-| `preview_sheet.py` | CLIツール | **多角的プレビュー＆サイズ対比生成**: スプライトシートから拡大グリッド・黒塗りシルエット・4地形（草/土/石/暗所）視認性モック・アニメGIF、および全キャラ＆ボスの共通接地 `scale_lineup_4x.png` を一括出力する |
+| `character_blueprints.py` | ライブラリ / CLI | **AI再現性の核**: サイズ規格×テイスト×サイズ区分（`S/M/L/XL`）×役割ランク（`hero/party/mob/enemy/midboss/boss`）の定量仕様と、**クリーン素体マネキン（`--mannequin`：`M` 4方向＋`L/XL` 大型ボス構造素体）・武器なし標準素体（`--show`）・厳密45度軸の装備オーバーレイ（`--equipped`）・SFC式4方向×4コマ歩行素体（`--walk`）**を提供する |
+| `lint_character_style.py` | CLIツール | **造形品質＆仕様ゲートリンター（キャラ・モンスター・S/M/L/XL対応）**: **Phase 1 仕様書（`docs/01〜03`）先行ゲート**・**頭幅全域＆胴体の透過ピンホール（前髪境界・柄際の塗り漏れ穴）**・**縦2px目の上下1px横ズレ（斜視バグ）**・実寸逸脱（帽子 `+3px` 余白対応）・接地ラインずれ・首伸び・左右対称きのこ頭・水平一直線バンド・内部黒横線・色数超過を自動検出する |
+| `preview_sheet.py` | CLIツール | **多角的プレビュー＆サイズ対比生成**: スプライトシートから拡大グリッド・黒塗りシルエット・4地形（草/土/石/暗所）視認性モック・アニメGIF、および全キャラ＆ボスの共通接地 `scale_lineup_4x.png` を一括出力する（歩行2コマ反復の早期警告付き） |
 | `preview_rig_composite.py` | CLIツール | `<asset_id>_meta.json` と分割パーツPNG群を読み込み、拡大合成ビュー・ピボット＆グリッド確認ビュー・個別パーツ一覧シートを1枚の画像として `workspace/03_preview/` に出力する |
 | `pack_spritesheet.py` | CLIツール | アニメーションの連番フレームPNG群を等間隔グリッドの1枚のスプライトシートPNGに結合し、汎用フレーム定義JSONを同時出力する |
-| `validate_assets.py` | CLIツール | `assets/` 配下のファイル命名規則（`snake_case`）、二値アルファ（半透明ゴミなし）、クロマキー残りなし、マスターパレット準拠、リグ／シートJSONの整合性を一括検証する |
+| `validate_assets.py` | CLIツール | `assets/` 配下の Phase 1 仕様書ゲート、ファイル命名規則（`snake_case`）、二値アルファ（半透明ゴミなし）、クロマキー残りなし、マスターパレット準拠、リグ／シートJSON整合性、および**4コマ歩行アニメの2コマ反復（片足ケンケン `Frame 0==2 & 1==3`）禁止**を一括検証する |
 | `quantize_and_snap.py` | CLI補助ツール | 外部ラフ画像などを取り込む際、等倍解像度への縮小・クロマキー背景透過・指定パレットへの減色を行う |
 
 ---
@@ -76,13 +76,15 @@ canvas.save("assets/items/itm_potion_red.png")
 
 ## 2. 主なCLIコマンド使用例
 
-### サイズ規格 × テイスト × サイズ区分(S/M/L/XL) × 役割ランク別の仕様・素体マップ確認
+### サイズ規格 × テイスト × サイズ区分(S/M/L/XL) × 役割ランク別の仕様・素体・歩行マップ確認
 ```powershell
 py tools/character_blueprints.py --list
 py tools/character_blueprints.py --info sfc_16x24 retro_classic --scale M --role hero
 py tools/character_blueprints.py --mannequin sfc_16x24 down --role mob
+py tools/character_blueprints.py --mannequin sfc_16x24 down --scale XL --role boss
 py tools/character_blueprints.py --show sfc_16x24 cool down
-py tools/character_blueprints.py --show sfc_16x24 cool down --equipped
+py tools/character_blueprints.py --show sfc_16x24 cool up --equipped
+py tools/character_blueprints.py --walk sfc_16x24 right
 py tools/character_blueprints.py --verify
 ```
 

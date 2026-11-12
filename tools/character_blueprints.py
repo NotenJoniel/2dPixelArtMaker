@@ -10,8 +10,10 @@ CLI使用例:
   py tools/character_blueprints.py --list
   py tools/character_blueprints.py --info sfc_16x24 retro_classic --scale M --role hero
   py tools/character_blueprints.py --mannequin sfc_16x24 down --role mob
+  py tools/character_blueprints.py --mannequin sfc_16x24 down --scale XL --role boss
   py tools/character_blueprints.py --show sfc_16x24 cool down
-  py tools/character_blueprints.py --show sfc_16x24 cool down --equipped
+  py tools/character_blueprints.py --show sfc_16x24 cool up --equipped
+  py tools/character_blueprints.py --walk sfc_16x24 right
   py tools/character_blueprints.py --verify
 """
 
@@ -33,7 +35,7 @@ SIZE_PRESETS: dict[str, dict[str, Any]] = {
         "canvas_size": (16, 16),
         "weapon_canvas_size": (24, 24),
         "default_origin": (8, 15),
-        "body_width_range": (12, 16),
+        "body_width_range": (10, 16),
         "body_height_range": (14, 16),
         "segment_heights_px": {
             "head": 9,
@@ -59,7 +61,7 @@ SIZE_PRESETS: dict[str, dict[str, Any]] = {
         "canvas_size": (32, 32),
         "weapon_canvas_size": (32, 32),
         "default_origin": (16, 28),
-        "body_width_range": (13, 18),
+        "body_width_range": (10, 18),
         "body_height_range": (18, 25),
         "segment_heights_px": {
             "2.5_head_standard": {"head": 13, "neck": 0, "torso": 6, "legs": 5, "total": 24},
@@ -67,8 +69,8 @@ SIZE_PRESETS: dict[str, dict[str, Any]] = {
         },
         "core_torso_width_range": (6, 8),
         "has_neck": False,
-        "max_colors_recommended": 12,
-        "max_colors_limit": 16,
+        "max_colors_recommended": 14,
+        "max_colors_limit": 18,
         "outline_policy": "outer_dark_inner_selout",
         "recommended_rig_mode": "frame_by_frame_or_simple_layers",
         "description": (
@@ -137,10 +139,10 @@ SIZE_PRESETS: dict[str, dict[str, Any]] = {
 SIZE_CLASS_SPECS: dict[str, dict[str, dict[str, Any]]] = {
     "fc_16x16": {
         "S": {
-            "label": "小型（スライム・コウモリ・妖精・小動物）",
+            "label": "小型（スライム・四足小獣・コウモリ・妖精）",
             "canvas_size": (16, 16),
             "origin": (8, 15),
-            "width_range": (8, 15),
+            "width_range": (8, 16),
             "height_range": (8, 13),
             "max_colors_limit": 4,
         },
@@ -148,7 +150,7 @@ SIZE_CLASS_SPECS: dict[str, dict[str, dict[str, Any]]] = {
             "label": "標準（主人公・仲間・街モブ・人型モンスター）",
             "canvas_size": (16, 16),
             "origin": (8, 15),
-            "width_range": (12, 16),
+            "width_range": (10, 16),
             "height_range": (14, 16),
             "max_colors_limit": 6,
         },
@@ -171,20 +173,20 @@ SIZE_CLASS_SPECS: dict[str, dict[str, dict[str, Any]]] = {
     },
     "sfc_16x24": {
         "S": {
-            "label": "小型（スライム・小動物・子供・マスコット妖精）",
+            "label": "小型（スライム・四足小獣・子供・マスコット妖精）",
             "canvas_size": (32, 32),
             "origin": (16, 28),
-            "width_range": (10, 16),
+            "width_range": (10, 20),
             "height_range": (10, 16),
-            "max_colors_limit": 10,
+            "max_colors_limit": 12,
         },
         "M": {
             "label": "標準（主人公・仲間・街モブ・標準亜人モンスター）",
             "canvas_size": (32, 32),
             "origin": (16, 28),
-            "width_range": (13, 18),
+            "width_range": (10, 18),
             "height_range": (18, 25),
-            "max_colors_limit": 16,
+            "max_colors_limit": 18,
         },
         "L": {
             "label": "大型（巨漢キャラ・重装騎士・オーガ・ゴーレム・中ボス）",
@@ -192,7 +194,7 @@ SIZE_CLASS_SPECS: dict[str, dict[str, dict[str, Any]]] = {
             "origin": (24, 42),
             "width_range": (20, 38),
             "height_range": (28, 38),
-            "max_colors_limit": 20,
+            "max_colors_limit": 22,
         },
         "XL": {
             "label": "特大（ドラゴン・魔神・巨大ボス）",
@@ -200,15 +202,15 @@ SIZE_CLASS_SPECS: dict[str, dict[str, dict[str, Any]]] = {
             "origin": (32, 58),
             "width_range": (34, 60),
             "height_range": (42, 58),
-            "max_colors_limit": 24,
+            "max_colors_limit": 26,
         },
     },
     "hd2d_18x32": {
         "S": {
-            "label": "小型（小型モンスター・妖精・小動物・子供）",
+            "label": "小型（小型モンスター・四足小獣・妖精・子供）",
             "canvas_size": (48, 48),
             "origin": (24, 38),
-            "width_range": (12, 22),
+            "width_range": (12, 26),
             "height_range": (14, 22),
             "max_colors_limit": 16,
         },
@@ -239,10 +241,10 @@ SIZE_CLASS_SPECS: dict[str, dict[str, dict[str, Any]]] = {
     },
     "high_32x56": {
         "S": {
-            "label": "小型（小型使い魔・スライム・小動物）",
+            "label": "小型（小型使い魔・四足小獣・スライム）",
             "canvas_size": (64, 64),
             "origin": (32, 60),
-            "width_range": (14, 28),
+            "width_range": (14, 34),
             "height_range": (18, 32),
             "max_colors_limit": 16,
         },
@@ -568,22 +570,22 @@ MANNEQUINS: dict[tuple[str, str], str] = {
         ...........KLLssssssK...........
         ...........KLsssssssK...........
         ...........KssssssssK...........
-        ...........KSssWKssK............
-        ...........KSssWKssK............
+        ...........KSssssWKsK...........
+        ...........KSssssWKsK...........
         ...........KSSsssssSK...........
-        ..........KKdCCBBSSSK...........
-        ..........KdCCBBBBBWK...........
-        ..........KdBKlsKBBBBK..........
-        .........KddBKssKBBBBK..........
-        .........KddBKKKKBBBBdK.........
-        ..........KK..KdBBBBBdK.........
-        ..............KdBK.KBdK.........
-        .............KdBBK..KBdK........
-        .............KpPK...KpPK........
-        .............KPqK...KPqK........
-        .............KpqqK..KpqqK.......
-        .............KQQQK..KQQQK.......
-        .............KKKK...KKKK........
+        ...........KKdCCBBSSK...........
+        ...........KdCCBBBBIK...........
+        ...........KdBKCCKBBBK..........
+        ...........KdBKCBKBBBK..........
+        ...........KdBKssKBBdK..........
+        ............KKKsSKBBdK..........
+        .............KdBBBBdK...........
+        .............KddBBBdK...........
+        .............KqpPPPqK...........
+        .............KqPPqqK............
+        .............KqpqqqpK...........
+        .............KQQQQQQK...........
+        .............KKKKKKKK...........
         ................................
         ................................
         ................................
@@ -602,22 +604,22 @@ MANNEQUINS: dict[tuple[str, str], str] = {
         ...........KssssssLLK...........
         ...........KsssssssLK...........
         ...........KssssssssK...........
-        ............KssKWssSK...........
-        ............KssKWssSK...........
+        ...........KsKWssssSK...........
+        ...........KsKWssssSK...........
         ...........KSsssssSSK...........
-        ...........KSSSBCCdKK...........
-        ...........KWBBBBBBCCdK.........
-        ..........KBBBBKslKBdK..........
-        ..........KBBBBKssKBddK.........
-        .........KdBBBBKKKKBddK.........
-        .........KdBBBBBdK..KK..........
-        .........KdBK.KBdK..............
-        ........KdBK..KBBdK.............
-        ........KPpK...KPpK.............
-        ........KqPK...KqPK.............
-        .......KqqpK..KqqpK.............
-        .......KQQQK..KQQQK.............
-        ........KKKK...KKKK.............
+        ...........KSSBBCCdKK...........
+        ...........KIBBBBCCdK...........
+        ..........KBBBKCCKBdK...........
+        ..........KBBBKBCKBdK...........
+        ..........KdBBKssKBdK...........
+        ..........KdBBKSsKKK............
+        ...........KdBBBBdK.............
+        ...........KdBBBddK.............
+        ...........KqPPPpqK.............
+        ............KqqPPqK.............
+        ...........KpqqqpqK.............
+        ...........KQQQQQQK.............
+        ...........KKKKKKKK.............
         ................................
         ................................
         ................................
@@ -680,8 +682,8 @@ MANNEQUINS: dict[tuple[str, str], str] = {
             ".........................KKLLLsssssssKK.........................",
             "........................KLLssssssssssssK........................",
             "........................KLssssssssssssSK........................",
-            "........................KssKWdsssKdWKssK........................",
-            "........................KssKWKsssKWKssSK........................",
+            "........................KssKWdssssdWKssK........................",
+            "........................KssKWKssssKWKssK........................",
             ".........................KSSsssssssssSK.........................",
             "..........................KSSsssssssSSK.........................",
             "...........................KKSSSSSSSKK..........................",
@@ -729,6 +731,117 @@ MANNEQUINS: dict[tuple[str, str], str] = {
             "...................KKKKKKKKKKK..........KKKKKKKKKKK.............",
         ]
         + ["." * 64 for _ in range(4)]
+    ),
+}
+
+# ==============================================================================
+# 5c. 大型・特大スケール素体マネキン (Scale L / XL Structural Boss Mannequins)
+#     ・中ボス(L: 48x48)や魔王・大ボス(XL: 64x64)を白紙から組んで「肩・胸・腕が単色の塊になる」
+#       失敗を防ぐため、角兜・曲面肩装甲・細腰コア・外套・分離籠手・円筒グリーヴを色分けした構造素体。
+# ==============================================================================
+SCALE_MANNEQUINS: dict[tuple[str, str, str], str] = {
+    ("sfc_16x24", "L", "down"): "\n".join(
+        ["." * 48 for _ in range(5)]
+        + [
+            "...............................KGK..............",
+            "..............KGDK............KGgDK.............",
+            "..............KGgDK..KKKKKK..KGgDK..............",
+            "...............KGgDKKIINNnnKKGgDK...............",
+            ".................KGKIINNNnnnKDK.................",
+            "...................KIINGgnnnK...................",
+            "...................KIKKGoKKnK...................",
+            "...........KCCBBddUKNWKssWKnKCCBBddUK...........",
+            ".........KCCCBBBddUUKLLssSEKCCCBBBddUUK.........",
+            "........KCCCBBBBddUUKssSSSEKCCCBBBBddUUK........",
+            ".........KCCCBBBdKCCCBBBBdddUUKBBBddUUK.........",
+            "..........KGGgggKCCCCBBBBBdddUUKggooDK..........",
+            "...........KDDDDKCCCCBGWRgdddUUKDDDDK...........",
+            ".........KINNnnK.KCCCBgRroddUUK.KINNnnK.........",
+            "........KIINNnnK.KCCCBBBBdddUUK.KIINNnnK........",
+            "........KCBBdUK...KCCCBBBddUUK...KCBBdUK........",
+            "........KCBBdUK...KGGGgggooDDK...KCBBdUK........",
+            "........KGggoDK...KGGGgggooDDK...KGggoDK........",
+            ".........KLsSEK..KCCCBBBBdddUUK..KLsSEK.........",
+            ".........KsSEEK.KCCCCBBBBBdddUUK.KsSEEK.........",
+            "..........KKKK..KCCCCBBBBBdddUUK..KKKK..........",
+            "...............KCCBBdUK..KCCBBdUK...............",
+            "...............KCCBBdUK..KCCBBdUK...............",
+            "..............KCCBBdUK....KCCBBdUK..............",
+            "..............KGGggoDK....KGGggoDK..............",
+            "..............KppPPqQK....KppPPqQK..............",
+            ".............KppPPqqQK....KppPPqqQK.............",
+            ".............KppPPqQK......KppPPqQK.............",
+            ".............KppPPqQK......KppPPqQK.............",
+            "............KppPPqqQK......KppPPqqQK............",
+            "............KppPPqqQK......KppPPqqQK............",
+            "............KppPPqqQK......KppPPqqQK............",
+            "...........KppPPPqqQK......KppPPPqqQK...........",
+            "...........KppPPPqqQK......KppPPPqqQK...........",
+            "..........KPPqqqQQQQK......KPPqqqQQQQK..........",
+            "..........KQQQQQQQQQK......KQQQQQQQQQK..........",
+            "..........KKKKKKKKKKK......KKKKKKKKKKK..........",
+        ]
+        + ["." * 48 for _ in range(6)]
+    ),
+    ("sfc_16x24", "XL", "down"): "\n".join(
+        ["." * 64 for _ in range(4)]
+        + [
+            ".............................................KGK................",
+            "................KGgDK......................KGgGK................",
+            "................KGgoDK....................KGgoDK................",
+            ".................KGgoDK..................KGgoDK.................",
+            "..................KGgoDK....KKKKKKKK....KGgoDK..................",
+            "...................KGggoDK.KIINNNnnnK.KGggoDK...................",
+            "....................KGggoDKIIINNNnnnnKGggoDK....................",
+            "......................KGgoKIIINGgnnnnKgoDK......................",
+            "..........................KIIINGgnnnnK..........................",
+            ".................KCCBBddUKKIKKKGoKKKnKKCCBBddUK.................",
+            "..............KCWCBBBBddUUKNWRKgoKWRnKCCCBBBBddUUK..............",
+            "............KCCCCBBBBBdddUUKIINNNnnnKCCCCBBBBBdddUUK............",
+            "...........KCCCCBBBBBddddUUKNLLssSEnKCCCCBBBBBddddUUK...........",
+            "..........KCCCCBBBBBBddddUUKKssSSSEKKCCCCBBBBBBddddUUK..........",
+            "..........KCCCCBBBBBddddUUKmKKKKKKKKmKCCCCBBBBBddddUUK..........",
+            "...........KCCCBBBBBdddUKCCCCBBBBBdddUUKCCBBBBBdddUUK...........",
+            "............KGGGggggooDKCCCCBBBBBBddddUUKGGggggooDDK............",
+            ".............KDDDDDDDDKCCCCCBGGGgggdddUUUKDDDDDDDDK.............",
+            "............KIINNnnKrrKCCCCCBGWRrrodddUUUKmMKIINNnnK............",
+            "...........KIINNnnnKrrrKCCCCBgRrmmodddUUKmmMKIINNnnnK...........",
+            "...........KIINNnnKrrrrKCUUUUooooooUUUUUKmmMMKIINNnnK...........",
+            "..........KCCBBddUKrrrrrKCCCCBBBBBdddUUKmmmMMKCCBBddUK..........",
+            ".........KCCBBBddUKrrrrrKCCCCBBBBBdddUUKmmmMMKCCBBBddUK.........",
+            ".........KCCBBddUKrrrrrrmKCCCBBBBdddUUKmmmmmMMKCCBBddUK.........",
+            ".........KCCBBddUKrrrrrrmKGGGggggoooDDKmmmmmMMKCCBBddUK.........",
+            ".........KGGggooDKrrrrrrmKGGGggggoooDDKmmmmmMMKGGggooDK.........",
+            "..........KLLssSEKrrrrrrKCCCKRRrrmMKdUUKmmmmMMKLLssSEK..........",
+            "..........KssSSEEKrrrrrKCCCCKRRrrmMKddUUKmmmMMKssSSEEK..........",
+            "...........KKKKKKrrrrrKCCCCCKRRrrmMKddUUUKmmmMMKKKKKK...........",
+            "..............KrrrrrrrKCCCCCKRRrrmMKddUUUKmmmMMMMK..............",
+            "..............KrrrrrrrrKCCCCKRRrrmMKddUUKmmmmMMMMK..............",
+            "..............KrrrrrrKCCBBdUKRRrrmMKCCBBdUKmmMMMMK..............",
+            "..............KrrrrrKCCBBddUKRRrrmMKCCBBddUKmMMMMK..............",
+            ".............KrrrrrrKCCBBddUKRRrrmMKCCBBddUKmMMMMMK.............",
+            ".............KrrrrrKCCBBBddUKRRrrmMKCCBBBddUKMMMMMK.............",
+            ".............KrrrrrKGGgggooDKRRrrmMKGGgggooDKMMMMMK.............",
+            ".............KrrrrKGGgggoooDKRRrrmMKGGgggoooDKMMMMK.............",
+            ".............KrrrrKppPPPqqQKKRRrrmMKKppPPPqqQKMMMMK.............",
+            "............KrrrrrKppPPPqqQKKRRrrmMKKppPPPqqQKMMMMMK............",
+            "............KrrrrrKppPPPqqQKKRRrrmMKKppPPPqqQKMMMMMK............",
+            "............KrrrrKppPPPqqqQKMMMMMMMMKppPPPqqqQKMMMMK............",
+            "............KrrrrKppPPPqqqQKmmmmmmmmKppPPPqqqQKMMMMK............",
+            "............KrrrrKppPPPqqQKmmmmmmmmmmKppPPPqqQKMMMMK............",
+            "...........KrrrrrKppPPPqqQKmmmmmmmmmmKppPPPqqQKMMMMMK...........",
+            "...........KrrrrrKppPPPqqQKmmmmmmmmmmKppPPPqqQKMMMMMK...........",
+            "...........KrrrrKppPPPqqqQKmmmmmmmmmmKppPPPqqqQKMMMMK...........",
+            "...........KrrKKKppPPPqqqQKmmmKKmmmmmKppPPPqqqQKKKMMK...........",
+            "..........KKKK..KppPPPqqqQKKKK....KKKKppPPPqqqQK..KKKK..........",
+            "...............KpppPPPqqQQK..........KpppPPPqqQQK...............",
+            "...............KpppPPPqqQQK..........KpppPPPqqQQK...............",
+            "..............KPPPqqqqQQQQK..........KPPPqqqqQQQQK..............",
+            "..............KqqqQQQQQQQQK..........KqqqQQQQQQQQK..............",
+            "..............KQQQQQQQQQQQK..........KQQQQQQQQQQQK..............",
+            "..............KKKKKKKKKKKKK..........KKKKKKKKKKKKK..............",
+        ]
+        + ["." * 64 for _ in range(6)]
     ),
 }
 
@@ -899,23 +1012,23 @@ BLUEPRINTS: dict[tuple[str, str, str], str] = {
         ........KKwwwwwwwwwlK...........
         .......KwwbwwwwbwwwwlK..........
         ......KKwbbrrrrrrrrrwK..........
-        .....KrrKbbwwbrrrRRrK...........
-        ......KK..KDwbssWKssK...........
-        ..........KDwbsWWKssK...........
+        .....KrrKbbwwbrrrRRrwK..........
+        ......KK..KDwbsssWKsK...........
+        ..........KDwbsssWKsK...........
         ...........KDDsssssSK...........
-        ..........KKdCCBBSSSK...........
-        ..........KdCCBBBBBWK...........
-        ..........KdBKlsKBBBBK..........
-        .........KddBKssKBBggK..........
-        .........KddBKKKKBBBBdK.........
-        ..........KK..KdBBBBBdK.........
-        ..............KdBK.KBdK.........
-        .............KdBBK..KBdK........
-        .............KpPK...KpPK........
-        .............KPqK...KPqK........
-        .............KpqqK..KpqqK.......
-        .............KQQQK..KQQQK.......
-        .............KKKK...KKKK........
+        ...........KKdCCBBSSK...........
+        ...........KdCCBBBBWK...........
+        ...........KdBKCCKBBBK..........
+        ...........KdBKCBKBggK..........
+        ...........KdBKssKBBdK..........
+        ............KKKsSKBBdK..........
+        .............KdBBBBdK...........
+        .............KddBBBdK...........
+        .............KqpPPPqK...........
+        .............KqPPqqK............
+        .............KqpqqqpK...........
+        .............KQQQQQQK...........
+        .............KKKKKKKK...........
         ................................
         ................................
         ................................
@@ -933,23 +1046,23 @@ BLUEPRINTS: dict[tuple[str, str, str], str] = {
         ...........KlwwwwwwwwwKK........
         ..........KlwwwwbwwwwbwwK.......
         ..........KwrrrrrrrrrbbwKK......
-        ...........KrRRrrrwbwwbbKrrK....
-        ............KssKWssbwDK..KK.....
-        ...........KssKWWsbwDK..........
+        ..........KwrRRrrrwbwwbbKrrK....
+        ...........KsKWsssbwDK..KK......
+        ...........KsKWsssbwDK..........
         ...........KSsssssDDK...........
-        ...........KSSSBCCdKK...........
-        ...........KWBBBBBBCCdK.........
-        ..........KBBBBKslKBdK..........
-        ..........KggBBKssKBddK.........
-        .........KdBBBBKKKKBddK.........
-        .........KdBBBBBdK..KK..........
-        .........KdBK.KBdK..............
-        ........KdBK..KBBdK.............
-        ........KPpK...KPpK.............
-        ........KqPK...KqPK.............
-        .......KqqpK..KqqpK.............
-        .......KQQQK..KQQQK.............
-        ........KKKK...KKKK.............
+        ...........KSSBBCCdKK...........
+        ...........KWBBBBCCdK...........
+        ..........KBBBKCCKBdK...........
+        ..........KggBKBCKBdK...........
+        ..........KdBBKssKBdK...........
+        ..........KdBBKSsKKK............
+        ...........KdBBBBdK.............
+        ...........KdBBBddK.............
+        ...........KqPPPpqK.............
+        ............KqqPPqK.............
+        ...........KpqqqpqK.............
+        ...........KQQQQQQK.............
+        ...........KKKKKKKK.............
         ................................
         ................................
         ................................
@@ -1041,22 +1154,22 @@ BLUEPRINTS: dict[tuple[str, str, str], str] = {
         ......KdBBNNNNNNNNNNIK..........
         ......KddKggggNNNNggggK.........
         .......KK.KwbggggggGGgK.........
-        ..........KwbNbssWKssK..........
-        ..........KwbwbsWWKssK..........
+        ..........KwbNsssWKsK...........
+        ..........KwbwsssWKsK...........
         ...........KbbsssssSK...........
-        .........KKrrrBBBBSSK...........
-        ........KRrrrBBBBBBWK...........
-        ........KrrrwKwsKBBBBK..........
-        ........KmrrsKssKBBggK..........
-        ........KKmmKKKKBBBBdK..........
-        ..........KK..KdBBBBBdK.........
-        ..............KdBK.KBdK.........
-        .............KPPK...KPPK........
-        .............KPqK...KPqK........
-        .............KPqqK..KPqqK.......
-        .............KPqqK..KPqqK.......
-        .............KqqqK..KqqqK.......
-        .............KKKK...KKKK........
+        ..........KKrrrBBBSSK...........
+        .........KRrrrBBBBBWK...........
+        .........KrrrwKrrKBBBK..........
+        .........KmrrwKrmKBggK..........
+        ..........KKmmKssKBBdK..........
+        ............KKKsSKBBdK..........
+        .............KdBBBBdK...........
+        .............KddBBBdK...........
+        .............KqPPPPqK...........
+        .............KqPPqqK............
+        .............KqPqqqPK...........
+        .............KQQQQQQK...........
+        .............KKKKKKKK...........
         ................................
         ................................
         ................................
@@ -1075,22 +1188,22 @@ BLUEPRINTS: dict[tuple[str, str, str], str] = {
         ..........KINNNNNNNNNNBBdK......
         .........KggggNNNNggggKddK......
         .........KgGGggggggbwK.KK.......
-        ..........KssKWssbNbwK..........
-        ..........KssKWWsbwbwK..........
+        ...........KsKWsssNbwK..........
+        ...........KsKWssswbwK..........
         ...........KSsssssbbK...........
-        ...........KSSBBBBrrrKK.........
-        ...........KWBBBBBBrrrRK........
-        ..........KBBBBKswKwrrrK........
-        ..........KggBBKssKsrrmK........
-        ..........KdBBBBKKKKmmKK........
-        .........KdBBBBBdK..KK..........
-        .........KdBK.KBdK..............
-        ........KPPK...KPPK.............
-        ........KqPK...KqPK.............
-        .......KqqPK..KqqPK.............
-        .......KqqPK..KqqPK.............
-        .......KqqqK..KqqqK.............
-        ........KKKK...KKKK.............
+        ...........KSSBBBrrrKK..........
+        ...........KWBBBBBrrrRK.........
+        ..........KBBBKrrKwrrrK.........
+        ..........KggBKmrKwrrmK.........
+        ..........KdBBKssKmmKK..........
+        ..........KdBBKSsKKK............
+        ...........KdBBBBdK.............
+        ...........KdBBBddK.............
+        ...........KqPPPPqK.............
+        ............KqqPPqK.............
+        ...........KPqqqPqK.............
+        ...........KQQQQQQK.............
+        ...........KKKKKKKK.............
         ................................
         ................................
         ................................
@@ -1243,8 +1356,8 @@ BLUEPRINTS: dict[tuple[str, str, str], str] = {
             "........................KllwwwwbwwwwwwwlK.......................",
             ".......................KKwwbrrrlwbrrrrwbK.......................",
             ".......................KwbDKrrRwbRRrrrKDK.......................",
-            "........................KDKbKWdsssKdWKbDK.......................",
-            "........................KDKbKWKsssKWKbDK........................",
+            "........................KDKbKWdssdWKbDK.........................",
+            "........................KDKbKWKssKWKbDK.........................",
             ".........................KDSsssssssssSDK........................",
             "..........................KSSsssssssSSK.........................",
             "...........................KKSSSSSSSKK..........................",
@@ -1309,65 +1422,335 @@ EQUIPMENT_OVERLAYS: dict[tuple[str, str, str], str] = {
     ("sfc_16x24", "back_sword_45", "down"): "\n".join(
         ["." * 32 for _ in range(11)]
         + [
-            ".....KK.........................",
-            "....KGGK........................",
-            ".....KooK.......................",
-            "......KgGK......................",
-            ".......K........................",
+            ".....KKK........................",
+            ".....KGGK.......................",
+            "......KooK......................",
+            ".......KgGK.....................",
+            "........KK......................",
         ]
         + ["." * 32 for _ in range(16)]
     ),
+    # 背面図(up): 柄頭(25,11)→鍔(21,14)→鞘(19,16..13,22)→石突(12,23)が完全な単一45度軸(x+y=35..36)上に一致
     ("sfc_16x24", "back_sword_45", "up"): "\n".join(
-        ["." * 32 for _ in range(11)]
+        ["." * 32 for _ in range(10)]
         + [
-            "..........................KK....",
-            ".........................KGGK...",
-            ".........................KooK...",
-            "........................KGgK....",
-            ".........................K......",
-            ".................WWCCdK.........",
-            "................WWCddK..........",
-            "...............WCCBK............",
-            "..............WWCBK.............",
-            ".............WWCBdK.............",
-            "............WWCBBdK.............",
-            "............goK.................",
+            "........................KK......",
+            ".......................KGGK.....",
+            "......................KooK......",
+            "....................KKGoK.......",
+            "....................KgGGK.......",
+            "...................KCCgKK.......",
+            "..................KCCdK.........",
+            ".................KCCdK..........",
+            "................KCCdK...........",
+            "...............KCCdK............",
+            "..............KCBdK.............",
+            ".............KCBdK..............",
+            "............KgoKK...............",
+            "............KK..................",
         ]
-        + ["." * 32 for _ in range(9)]
+        + ["." * 32 for _ in range(8)]
     ),
     ("sfc_16x24", "back_sword_45", "right"): "\n".join(
         ["." * 32 for _ in range(12)]
         + [
-            "....KGGK........................",
-            ".....KooK.......................",
-            "......KgGK......................",
-            ".......K........................",
+            "........KK......................",
+            ".......KGGK.....................",
+            "........KooK....................",
+            ".........KgGK...................",
+            "..........KK....................",
         ]
-        + ["." * 32 for _ in range(16)]
+        + ["." * 32 for _ in range(15)]
     ),
     ("sfc_16x24", "back_sword_45", "left"): "\n".join(
         ["." * 32 for _ in range(12)]
         + [
-            "........................KGGK....",
-            ".......................KooK.....",
-            "......................KGgK......",
-            "........................K.......",
+            "......................KK........",
+            ".....................KGGK.......",
+            "....................KooK........",
+            "...................KGgK.........",
+            "....................KK..........",
         ]
-        + ["." * 32 for _ in range(16)]
+        + ["." * 32 for _ in range(15)]
     ),
     ("hd2d_18x32", "back_sword_45", "down"): "\n".join(
-        ["." * 48 for _ in range(13)]
+        ["." * 48 for _ in range(15)]
         + [
-            "............DD..................................",
-            "...........DoGD.................................",
-            "............DwoD................................",
-            "...........DoGGD................................",
-            "............DDoD................................",
-            "..............D.................................",
+            ".............DDD................................",
+            "............DoGGD...............................",
+            ".............DwoD...............................",
+            "............DoGGD...............................",
+            ".............DDooD..............................",
+            "...............DD...............................",
         ]
-        + ["." * 48 for _ in range(29)]
+        + ["." * 48 for _ in range(27)]
     ),
 }
+
+# ==============================================================================
+# 6c. 検証済み4フレームSFC王道歩行サイクル (Verified 4-Frame Walk Cycle Blueprints)
+#     ・構成: [Frame 0: 踏み出しA(+1px沈み), Frame 1: 直立通過, Frame 2: 踏み出しB(+1px沈み), Frame 3: 直立通過]
+#     ・ポイント:
+#       1. 踏み出しフレーム(0, 2)で頭・胴体を「下へ+1px沈める」ことで、重心移動の説得力を出しつつ
+#          帽子キャラでも最大身長を超過しない（上へ持ち上げない）。
+#       2. 横向き(right/left)では奥脚を暗色(d/q/Q)、手前脚を明色(B/p/P)で塗り分け、手前腕を逆位相に振る。
+#       3. Frame 0 と Frame 2 で左右の脚が必ず交互に入れ替わる（2コマ反復のケンケン歩き禁止）。
+# ==============================================================================
+WALK_BLUEPRINTS: dict[tuple[str, str], tuple[str, str, str, str]] = {
+    ("sfc_16x24", "down"): (
+        "\n".join([
+            "................................",
+            "................................",
+            "................................",
+            "................................",
+            "................................",
+            "................K...............",
+            "............K..KlK..K...........",
+            "...........KlKKlwwKKlK..........",
+            "..........KllwwlwwwwlwK.........",
+            ".........KllwwwwwwwwwwlK........",
+            "........KKwwwwbwwwwwwwbK........",
+            ".......KwwbwbrrrlwbrrwbbK.......",
+            "........KbbDKrrRwbRRrKDK........",
+            ".........KDKDWKssKWKDK..........",
+            "..........KDKWKssKWKDK..........",
+            "...........KDSssssSDK...........",
+            "..........KKdBBSSBBdKK..........",
+            ".........KdCCBBWWBBCCdK.........",
+            ".........KlsKBBdWBBKddK.........",
+            ".........KssKBBgoBBKCCK.........",
+            "..........KKKBBggBBKslK.........",
+            "...........KdBBBBBBKssK.........",
+            "...........KdBBKKddKKK..........",
+            "..........KpPPK..KqqK...........",
+            "..........KPqqK..KQQK...........",
+            "..........KpqqK..KKKK...........",
+            "..........KQQQK.................",
+            "..........KKKK..................",
+            "................................",
+            "................................",
+            "................................",
+            "................................",
+        ]),
+        textwrap.dedent(BLUEPRINTS[("sfc_16x24", "cool", "down")]).strip("\n"),
+        "\n".join([
+            "................................",
+            "................................",
+            "................................",
+            "................................",
+            "................................",
+            "................K...............",
+            "............K..KlK..K...........",
+            "...........KlKKlwwKKlK..........",
+            "..........KllwwlwwwwlwK.........",
+            ".........KllwwwwwwwwwwlK........",
+            "........KKwwwwbwwwwwwwbK........",
+            ".......KwwbwbrrrlwbrrwbbK.......",
+            "........KbbDKrrRwbRRrKDK........",
+            ".........KDKDWKssKWKDK..........",
+            "..........KDKWKssKWKDK..........",
+            "...........KDSssssSDK...........",
+            "..........KKdBBSSBBdKK..........",
+            ".........KdCCBBWWBBCCdK.........",
+            ".........KddKBBdWBBKslK.........",
+            ".........KCCKBBgoBBKssK.........",
+            ".........KlsKBBggBBKKK..........",
+            ".........KssKBBBBBBdK...........",
+            "..........KKKddKKBBdK...........",
+            "...........KqqK..KPpPK..........",
+            "...........KQQK..KqqPK..........",
+            "...........KKKK..KqqpK..........",
+            ".................KQQQK..........",
+            "..................KKKK..........",
+            "................................",
+            "................................",
+            "................................",
+            "................................",
+        ]),
+        textwrap.dedent(BLUEPRINTS[("sfc_16x24", "cool", "down")]).strip("\n"),
+    ),
+    ("sfc_16x24", "up"): (
+        "\n".join([
+            "................................",
+            "................................",
+            "................................",
+            "................................",
+            "................................",
+            "................K...............",
+            "...........K..KlK..K............",
+            "..........KlKKwwlKKlK...........",
+            ".........KwlwwwwlwwllK..........",
+            "........KlwwwwwwwwwwllK.........",
+            "........KbwwwwwwwbwwwwKK........",
+            ".......KbbwrrrrrrrrrrwbwwK......",
+            "........KDKrRRrrrrrrrKbbK.......",
+            "..........KDKbbbbwbbbKDK........",
+            "..........KDKbbbbbbbbKDK........",
+            "...........KDDbbbbbbDDK.........",
+            "..........KKdCCCCCCCCdKK........",
+            ".........KdCCBBBBBBCCdK.........",
+            ".........KddKBBBBBBKslK.........",
+            ".........KlsKBBBBBBKssK.........",
+            ".........KssKBBBBBBKKK..........",
+            "..........KKKdBBBBdK............",
+            "...........KddK..KBBdK..........",
+            "...........KQQK..KPpPK..........",
+            "...........KQQK..KqqPK..........",
+            "...........KKKK..KqqpK..........",
+            ".................KQQQK..........",
+            "..................KKKK..........",
+            "................................",
+            "................................",
+            "................................",
+            "................................",
+        ]),
+        textwrap.dedent(BLUEPRINTS[("sfc_16x24", "cool", "up")]).strip("\n"),
+        "\n".join([
+            "................................",
+            "................................",
+            "................................",
+            "................................",
+            "................................",
+            "................K...............",
+            "...........K..KlK..K............",
+            "..........KlKKwwlKKlK...........",
+            ".........KwlwwwwlwwllK..........",
+            "........KlwwwwwwwwwwllK.........",
+            "........KbwwwwwwwbwwwwKK........",
+            ".......KbbwrrrrrrrrrrwbwwK......",
+            "........KDKrRRrrrrrrrKbbK.......",
+            "..........KDKbbbbwbbbKDK........",
+            "..........KDKbbbbbbbbKDK........",
+            "...........KDDbbbbbbDDK.........",
+            "..........KKdCCCCCCCCdKK........",
+            ".........KdCCBBBBBBCCdK.........",
+            ".........KlsKBBBBBBKddK.........",
+            ".........KssKBBBBBBKslK.........",
+            "..........KKKBBBBBBKssK.........",
+            "............KdBBBBdKKK..........",
+            "..........KdBBK..KddK...........",
+            "..........KpPPK..KQQK...........",
+            "..........KPqqK..KQQK...........",
+            "..........KpqqK..KKKK...........",
+            "..........KQQQK.................",
+            "..........KKKK..................",
+            "................................",
+            "................................",
+            "................................",
+            "................................",
+        ]),
+        textwrap.dedent(BLUEPRINTS[("sfc_16x24", "cool", "up")]).strip("\n"),
+    ),
+    ("sfc_16x24", "right"): (
+        "\n".join([
+            "................................",
+            "................................",
+            "................................",
+            "................................",
+            "................................",
+            "...............K................",
+            "...........K..KlK...............",
+            "..........KlKKlwwK..............",
+            ".........KllwwlwwwKK............",
+            "........KKwwwwwwwwwlK...........",
+            ".......KwwbwwwwbwwwwlK..........",
+            "......KKwbbrrrrrrrrrwK..........",
+            ".....KrrKbbwwbrrrRRrwK..........",
+            "......KK..KDwbsssWKsK...........",
+            "..........KDwbsssWKsK...........",
+            "...........KDDsssssSK...........",
+            "...........KKdCCBBSSK...........",
+            "..........KdCCBBBBBWK...........",
+            "..........KdBKCCCBBBK...........",
+            "..........KddKCCBKsSK...........",
+            "...........KKKdBBKssK...........",
+            "...........KdBBBBBBdK...........",
+            "..........KdBBK..KdddK..........",
+            ".........KpPPK....KqqK..........",
+            ".........KPqqK....KqqqK.........",
+            "........KPqqK.....KqqQK.........",
+            "........KQQK......KQQQKK........",
+            "........KKK.......KKKKKK........",
+            "................................",
+            "................................",
+            "................................",
+            "................................",
+        ]),
+        textwrap.dedent(BLUEPRINTS[("sfc_16x24", "cool", "right")]).strip("\n"),
+        "\n".join([
+            "................................",
+            "................................",
+            "................................",
+            "................................",
+            "................................",
+            "...............K................",
+            "...........K..KlK...............",
+            "..........KlKKlwwK..............",
+            ".........KllwwlwwwKK............",
+            "........KKwwwwwwwwwlK...........",
+            ".......KwwbwwwwbwwwwlK..........",
+            ".....KKKwbbrrrrrrrrrwK..........",
+            "....KrrrKbbwwbrrrRRrwK..........",
+            ".....KK...KDwbsssWKsK...........",
+            "..........KDwbsssWKsK...........",
+            "...........KDDsssssSK...........",
+            "...........KKdCCBBSSK...........",
+            "..........KdCCBBBBBWK...........",
+            ".........KCCKBBBBBBBBK..........",
+            ".........KCBKBBBBBBggKK.........",
+            ".........KssKBBBBBBdKSK.........",
+            "..........KKKdBBBBBBdKK.........",
+            "..........KdddK..KBBBK..........",
+            ".........KqqqK....KpPPK.........",
+            ".........KqqK.....KPqqK.........",
+            "........KQqqK.....KpqqpK........",
+            "........KQQK......KQQQQK........",
+            "........KKK.......KKKKKK........",
+            "................................",
+            "................................",
+            "................................",
+            "................................",
+        ]),
+        "\n".join([
+            "................................",
+            "................................",
+            "................................",
+            "................................",
+            "...............K................",
+            "...........K..KlK...............",
+            "..........KlKKlwwK..............",
+            ".........KllwwlwwwKK............",
+            "........KKwwwwwwwwwlK...........",
+            ".......KwwbwwwwbwwwwlK..........",
+            ".....KKKwbbrrrrrrrrrwK..........",
+            "....KrrrKbbwwbrrrRRrwK..........",
+            ".....KK...KDwbsssWKsK...........",
+            "..........KDwbsssWKsK...........",
+            "...........KDDsssssSK...........",
+            "...........KKdCCBBSSK...........",
+            "...........KdCCBBBBWK...........",
+            "...........KdBKCCKBBBK..........",
+            "...........KdBKCBKBggK..........",
+            "...........KdBKssKBBdK..........",
+            "............KKKsSKBBdK..........",
+            ".............KdBBBBdK...........",
+            ".............KBBddBdK...........",
+            ".............KpPPPqqK...........",
+            ".............KPqqqqK............",
+            ".............KpqqqqpK...........",
+            ".............KQQQQQQK...........",
+            ".............KKKKKKKK...........",
+            "................................",
+            "................................",
+            "................................",
+            "................................",
+        ]),
+    ),
+}
+WALK_BLUEPRINTS[("sfc_16x24", "left")] = tuple(
+    "\n".join(r[::-1] for r in frame.splitlines())
+    for frame in WALK_BLUEPRINTS[("sfc_16x24", "right")]
+)  # type: ignore[assignment]
 
 # サイズ規格ごとの標準フォールバックテイスト順
 _FALLBACK_TASTES: dict[str, tuple[str, ...]] = {
@@ -1424,16 +1807,24 @@ def apply_ascii_overlay(base_grid: str, overlay_grid: str) -> str:
     return "\n".join("".join(r) for r in base_rows)
 
 
-def get_mannequin(size_id: str, direction: str = "down", *, role: str = "hero") -> str:
+def get_mannequin(size_id: str, direction: str = "down", *, role: str = "hero", scale: str = "M") -> str:
     """
-    武器・帽子・外ハネ髪を含まないクリーンな素体マネキン ASCII マップを返す。
-    頭部が肌色で塗りつぶされているため、上から髪型や帽子を自由に重ねても額に透過穴が空かない。
-    role='mob' 指定時は白目(W)を肌色(s)へ自動置換し、モブ用のシンプルな黒目にする。
+    素体マネキン ASCII マップを返す。
+    - 標準 M サイズ: 武器・帽子・外ハネ髪を含まない坊主ドーム構造（上から髪・帽子を重ねても透過穴が空かない）。
+      role='mob' 指定時は白目(W)を肌色(s)へ自動置換し、モブ用のシンプルな黒目にする。
+    - L / XL サイズ (--scale L / XL): 大型騎士・中ボス・大ボス用の立体構造マネキンを返す（未収録規格は M を返す）。
     """
     spec = get_size_spec(size_id)
+    sc = scale.upper()
+    get_scale_spec(size_id, sc)
     get_role_spec(role)
     if direction not in ("down", "up", "right", "left"):
         raise KeyError(f"Unknown direction {direction!r}. Expected down / up / right / left.")
+
+    if sc in ("L", "XL"):
+        scale_raw = SCALE_MANNEQUINS.get((size_id, sc, direction)) or SCALE_MANNEQUINS.get((size_id, sc, "down"))
+        if scale_raw is not None:
+            return textwrap.dedent(scale_raw).strip("\n")
 
     raw = MANNEQUINS.get((size_id, direction)) or MANNEQUINS.get((size_id, "down"))
     if raw is None:
@@ -1447,6 +1838,22 @@ def get_mannequin(size_id: str, direction: str = "down", *, role: str = "hero") 
                 if ch == "W":
                     lines[y][x] = "s"
     return "\n".join("".join(r) for r in lines)
+
+
+def get_walk_frames(size_id: str, direction: str = "right") -> list[str]:
+    """
+    指定した (size_id, direction) の検証済み4フレーム歩行サイクル ASCII マップリスト [f0, f1, f2, f3] を返す。
+    """
+    get_size_spec(size_id)
+    if direction not in ("down", "up", "right", "left"):
+        raise KeyError(f"Unknown direction {direction!r}. Expected down / up / right / left.")
+    frames = WALK_BLUEPRINTS.get((size_id, direction))
+    if frames is None:
+        raise KeyError(
+            f"No 4-frame walk cycle stored for size_preset={size_id!r}, dir={direction!r}. "
+            f"Available: {sorted(WALK_BLUEPRINTS.keys())}"
+        )
+    return [textwrap.dedent(f).strip("\n") for f in frames]
 
 
 def get_equipment_overlay(size_id: str, equip_id: str = "back_sword_45", direction: str = "down") -> str:
@@ -1531,11 +1938,18 @@ def get_blueprint(size_id: str, taste_id: str, direction: str = "down", *, equip
     return bp
 
 
-def _verify_single_grid(label: str, size_id: str, raw: str, valid_chars: set[str], check_height: bool = True) -> tuple[list[str], int | None]:
+def _verify_single_grid(
+    label: str,
+    size_id: str,
+    raw: str,
+    valid_chars: set[str],
+    check_height: bool = True,
+    scale_id: str = "M",
+) -> tuple[list[str], int | None]:
     errs: list[str] = []
-    spec = get_size_spec(size_id)
-    cw, ch = spec["canvas_size"]
-    exp_ground_y = spec["default_origin"][1] - 1
+    sc_spec = get_scale_spec(size_id, scale_id)
+    cw, ch = sc_spec["canvas_size"]
+    exp_ground_y = sc_spec["origin"][1] - 1
     lines = textwrap.dedent(raw).strip("\n").splitlines()
     if len(lines) != ch:
         errs.append(f"{label}: expected {ch} rows, got {len(lines)}")
@@ -1554,23 +1968,35 @@ def _verify_single_grid(label: str, size_id: str, raw: str, valid_chars: set[str
     min_y, max_y = min(ys), max(ys)
     if check_height:
         bh = max_y - min_y + 1
-        lo_h, hi_h = spec["body_height_range"]
+        lo_h, hi_h = sc_spec["height_range"]
         if not (lo_h <= bh <= hi_h):
             errs.append(f"{label}: height {bh}px (y={min_y}..{max_y}) outside {lo_h}..{hi_h}px")
         if max_y != exp_ground_y:
-            errs.append(f"{label}: bottom y={max_y} does not match ground_y={exp_ground_y} (origin={spec['default_origin']})")
+            errs.append(f"{label}: bottom y={max_y} does not match ground_y={exp_ground_y} (origin={sc_spec['origin']})")
     return errs, max_y
 
 
 def verify_all_blueprints() -> list[str]:
-    """全収録マネキン・素体・装備オーバーレイの寸法・文字種・実身長・接地ライン一致を機械検証する。"""
+    """全収録マネキン(M/L/XL)・素体・装備オーバーレイ・4フレーム歩行サイクルの整合性を機械検証する。"""
     errors: list[str] = []
     valid_chars = set(STANDARD_SYMBOL_MAP.keys()) | {"."}
     ground_by_pair: dict[tuple[str, str], dict[str, int]] = {}
 
-    # 1. マネキン素体の検証
+    # 1. 標準 M マネキン素体の検証
     for (size_id, direction), raw in MANNEQUINS.items():
         e_list, _ = _verify_single_grid(f"mannequin:{size_id}/{direction}", size_id, raw, valid_chars, check_height=True)
+        errors.extend(e_list)
+
+    # 1b. 大型 L / XL ボス構造マネキンの検証
+    for (size_id, scale_id, direction), raw in SCALE_MANNEQUINS.items():
+        e_list, _ = _verify_single_grid(
+            f"scale_mannequin:{size_id}/{scale_id}/{direction}",
+            size_id,
+            raw,
+            valid_chars,
+            check_height=True,
+            scale_id=scale_id,
+        )
         errors.extend(e_list)
 
     # 2. スタイル別素体の検証
@@ -1592,7 +2018,18 @@ def verify_all_blueprints() -> list[str]:
         e_comp, _ = _verify_single_grid(f"equipped:{size_id}/cool/{direction}", size_id, comp, valid_chars, check_height=True)
         errors.extend(e_comp)
 
-    # 4. 全 4x4x4 組み合わせで resolve_blueprint / get_mannequin が例外を出さないことも保証
+    # 4. 4フレーム歩行サイクルの検証（接地一致 & Frame 0 != Frame 2 の交互踏み出し保証）
+    for (size_id, direction), frames in WALK_BLUEPRINTS.items():
+        if len(frames) != 4:
+            errors.append(f"walk:{size_id}/{direction}: expected 4 frames, got {len(frames)}")
+            continue
+        for idx, f_raw in enumerate(frames):
+            e_w, _ = _verify_single_grid(f"walk:{size_id}/{direction}[{idx}]", size_id, f_raw, valid_chars, check_height=True)
+            errors.extend(e_w)
+        if frames[0] == frames[2] and frames[1] == frames[3]:
+            errors.append(f"walk:{size_id}/{direction}: frame 0==2 and frame 1==3 (2-frame hop duplication)")
+
+    # 5. 全 4x4x4 組み合わせで resolve_blueprint / get_mannequin が例外を出さないことも保証
     for s_id in SIZE_PRESETS:
         for d_id in ("down", "up", "right", "left"):
             mq = get_mannequin(s_id, d_id, role="mob")
@@ -1610,13 +2047,13 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="サイズ規格 × テイスト × サイズ区分 × 役割ランク別の素体ブループリント参照ツール")
     parser.add_argument("--list", action="store_true", help="利用可能なサイズ規格・サイズ区分・役割ランク・テイスト・素体一覧を表示")
     parser.add_argument("--info", nargs=2, metavar=("SIZE_ID", "TASTE_ID"), help="指定したサイズ×テイストの定量仕様を表示")
-    parser.add_argument("--scale", default="M", help="--info 時のサイズ区分 (S / M / L / XL, default: M)")
+    parser.add_argument("--scale", default="M", help="--info / --mannequin 時のサイズ区分 (S / M / L / XL, default: M)")
     parser.add_argument("--role", default="hero", help="--info / --mannequin 時の役割ランク (hero / party / mob / enemy / midboss / boss, default: hero)")
     parser.add_argument(
         "--mannequin",
         nargs=2,
         metavar=("SIZE_ID", "DIR"),
-        help="髪・帽子・武器を含まないクリーンな素体マネキンASCIIマップを表示（仲間・街人や独自髪型のベース用）",
+        help="素体マネキンASCIIマップを表示（M: 髪・帽子・武器なし素体 / --scale L,XL: 大型・特大ボス構造素体）",
     )
     parser.add_argument(
         "--show",
@@ -1625,7 +2062,14 @@ def main() -> int:
         help="指定したテイスト別リファレンス素体ASCIIマップを表示（デフォルトは武器なし、--equipped で斜め45度背負い剣を合成）",
     )
     parser.add_argument("--equipped", action="store_true", help="--show 時に分離済みの武器オーバーレイ（斜め45度背負い剣等）を合成して表示")
-    parser.add_argument("--verify", action="store_true", help="全収録マネキン・ブループリント・装備オーバーレイの整合性を検証")
+    parser.add_argument(
+        "--walk",
+        nargs=2,
+        metavar=("SIZE_ID", "DIR"),
+        help="検証済み4フレームSFC王道歩行サイクル [Frame 0..3] のASCIIマップを表示（例: --walk sfc_16x24 right）",
+    )
+    parser.add_argument("--frame", type=int, choices=(0, 1, 2, 3), default=None, help="--walk 時に特定フレーム番号(0〜3)のみを表示")
+    parser.add_argument("--verify", action="store_true", help="全収録マネキン・ブループリント・装備オーバーレイ・歩行サイクルの整合性を検証")
     args = parser.parse_args()
 
     if args.verify:
@@ -1634,9 +2078,11 @@ def main() -> int:
             for e in errs:
                 print(f"[VERIFY ERROR] {e}", file=sys.stderr)
             return 1
+        walk_frame_cnt = sum(len(v) for v in WALK_BLUEPRINTS.values())
         print(
-            f"[VERIFY PASS] All {len(MANNEQUINS)} mannequins, {len(BLUEPRINTS)} blueprints, "
-            f"{len(EQUIPMENT_OVERLAYS)} equipment overlays, and 64 preset combinations verified cleanly."
+            f"[VERIFY PASS] All {len(MANNEQUINS)} M-mannequins, {len(SCALE_MANNEQUINS)} L/XL boss mannequins, "
+            f"{len(BLUEPRINTS)} blueprints, {len(EQUIPMENT_OVERLAYS)} equipment overlays, "
+            f"{walk_frame_cnt} walk frames, and 64 preset combinations verified cleanly."
         )
         return 0
 
@@ -1653,13 +2099,18 @@ def main() -> int:
         print("\n=== Taste Presets ===")
         for k, v in TASTE_PRESETS.items():
             print(f"  - {k:14s}: {v['label']}")
-        print("\n=== Base Mannequins (--mannequin SIZE DIR [--role mob]) ===")
+        print("\n=== Base Mannequins (--mannequin SIZE DIR [--scale M|L|XL] [--role mob|boss]) ===")
         for s, d in MANNEQUINS:
-            print(f"  - {s} / {d}")
+            print(f"  - {s} / scale=M / {d}")
+        for s, sc, d in SCALE_MANNEQUINS:
+            print(f"  - {s} / scale={sc} / {d}  [Boss / Colossus Structural Base]")
         print("\n=== Styled Blueprints (--show SIZE TASTE DIR [--equipped]) ===")
         for s, t, d in BLUEPRINTS:
             eq_note = " [+ --equipped back_sword_45]" if (s, "back_sword_45", d) in EQUIPMENT_OVERLAYS and t == "cool" else ""
             print(f"  - {s} / {t} / {d}{eq_note}")
+        print("\n=== 4-Frame Walk Cycle Blueprints (--walk SIZE DIR [--frame 0..3]) ===")
+        for s, d in WALK_BLUEPRINTS:
+            print(f"  - {s} / {d} (4 frames: stride_A [+1px sink] -> pass -> stride_B [+1px sink] -> pass)")
         return 0
 
     if args.info:
@@ -1675,15 +2126,47 @@ def main() -> int:
 
     if args.mannequin:
         s_id, d_id = args.mannequin
-        mq = get_mannequin(s_id, d_id, role=args.role)
+        sc = args.scale.upper()
+        mq = get_mannequin(s_id, d_id, role=args.role, scale=sc)
         lines = mq.splitlines()
-        spec = get_size_spec(s_id)
-        print(
-            f"# Base Mannequin (weaponless / hatless / solid skin cranium): "
-            f"{s_id} ({d_id}, role={args.role}) — {len(lines[0])}x{len(lines)} px, origin={list(spec['default_origin'])}"
-        )
-        print("# Tip: Draw hair/hat/outfit directly on top of this mannequin; boots use independent symbols (p/P/q/Q).")
+        sc_spec = get_scale_spec(s_id, sc)
+        if sc in ("L", "XL") and ((s_id, sc, d_id) in SCALE_MANNEQUINS or (s_id, sc, "down") in SCALE_MANNEQUINS):
+            print(
+                f"# Boss / Large Structural Mannequin: {s_id} (scale={sc}, {d_id}, role={args.role}) — "
+                f"{len(lines[0])}x{len(lines)} px, origin={list(sc_spec['origin'])}"
+            )
+            print("# Tip: Pauldrons (C/B/d/U), torso core, mantle (r/m/M), gauntlets, and cylindrical greaves (p/P/q/Q) are pre-separated.")
+        else:
+            spec = get_size_spec(s_id)
+            print(
+                f"# Base Mannequin (weaponless / hatless / solid skin cranium): "
+                f"{s_id} (scale={sc}, {d_id}, role={args.role}) — {len(lines[0])}x{len(lines)} px, origin={list(spec['default_origin'])}"
+            )
+            print("# Tip: Draw hair/hat/outfit directly on top of this mannequin; boots use independent symbols (p/P/q/Q).")
         print(mq)
+        return 0
+
+    if args.walk:
+        s_id, d_id = args.walk
+        frames = get_walk_frames(s_id, d_id)
+        spec = get_size_spec(s_id)
+        indices = [args.frame] if args.frame is not None else [0, 1, 2, 3]
+        phase_labels = {
+            0: "Stride A (+1px downward body sink, far/left foot forward, opposing arm swing)",
+            1: "Passing A (upright 0px sink, legs overlapping under center)",
+            2: "Stride B (+1px downward body sink, near/right foot forward, opposing arm swing)",
+            3: "Passing B (upright 0px sink, secondary hair/bandana follow-through)",
+        }
+        for idx in indices:
+            fg = frames[idx]
+            flines = fg.splitlines()
+            print(
+                f"# Walk Frame [{idx}/3]: {s_id} ({d_id}) — {phase_labels[idx]} | "
+                f"{len(flines[0])}x{len(flines)} px, ground_y={spec['default_origin'][1]-1}"
+            )
+            print(fg)
+            if len(indices) > 1 and idx != indices[-1]:
+                print()
         return 0
 
     if args.show:
