@@ -153,14 +153,28 @@ class PixelCanvas:
         symbol_map: Mapping[str, ColorSpec],
         *,
         transparent_chars: str = ". ",
+        check_uniform_width: bool = True,
     ) -> None:
-        """複数行の文字列グリッドを座標 (x, y) を左上として描画する。"""
+        """複数行の文字列グリッドを座標 (x, y) を左上として描画する。
+
+        check_uniform_width=True（デフォルト）のとき、各行の文字数が不一致の場合は
+        1ドット単位の列ズレバグを防ぐため即座に ValueError を送出する。
+        """
         dedented = textwrap.dedent(ascii_grid)
         lines = dedented.splitlines()
         while lines and not lines[0].strip():
             lines.pop(0)
         while lines and not lines[-1].strip():
             lines.pop()
+
+        if check_uniform_width and len(lines) >= 2:
+            expected_w = len(lines[0])
+            for dy, row in enumerate(lines[1:], start=1):
+                if len(row) != expected_w:
+                    raise ValueError(
+                        f"ASCII map row {dy} has width {len(row)}, expected {expected_w} "
+                        f"(row 0 width). Row content: {row!r}"
+                    )
 
         resolved_map = {ch: self.palette.resolve(col) for ch, col in symbol_map.items()}
         for dy, row in enumerate(lines):

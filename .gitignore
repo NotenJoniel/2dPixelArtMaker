@@ -12,9 +12,11 @@ __pycache__/
 .venv/
 venv/
 
-# Workspace temporary & raw heavy outputs (keep .gitkeep & README.md)
-workspace/01_raw/*
-!workspace/01_raw/.gitkeep
+# Workspace intermediate & preview outputs (regenerable from workspace/01_raw/*.py)
+# Note: workspace/01_raw/ generator scripts (*.py, *.json, *.md) are tracked in Git!
+workspace/01_raw/**/*.png
+workspace/01_raw/**/*.jpg
+workspace/01_raw/**/*.webp
 workspace/02_work/*
 !workspace/02_work/.gitkeep
 workspace/03_preview/*

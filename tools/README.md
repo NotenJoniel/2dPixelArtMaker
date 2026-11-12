@@ -10,7 +10,9 @@
 
 | ファイル名 | 種別 | 役割 |
 | :--- | :--- | :--- |
-| `pixel_canvas.py` | Pythonライブラリ | 整数ピクセル描画コアAPI（記号ドットマップ、ブレゼンハム線分、対称楕円、多角形、方向性シェーディング、関節抜き対応1pxアウトライン、拡大プレビュー生成） |
+| `pixel_canvas.py` | Pythonライブラリ | 整数ピクセル描画コアAPI（行幅一致検査付き記号ドットマップ、ブレゼンハム線分、対称楕円、多角形、方向性シェーディング、関節抜き対応1pxアウトライン、拡大プレビュー生成） |
+| `character_blueprints.py` | ライブラリ / CLI | **AI再現性の核**: サイズ規格（`fc_16x16`, `sfc_16x24`, `hd2d_18x32`, `high_32x56`）× テイスト（`cute`, `cool`, `retro_classic`, `dark_serious`）の定量ピクセル仕様と、検証済み4方向素体ASCIIマップを提供する |
+| `lint_character_style.py` | CLIツール | **造形品質リンター**: 生成されたキャラクターPNGを解析し、実身長の間延び・横幅肥大・首なし規格での首伸び・左右完全対称のきのこ頭・内部の黒横線輪切り・色数超過を自動検出する |
 | `preview_rig_composite.py` | CLIツール | `<asset_id>_meta.json` と分割パーツPNG群を読み込み、拡大合成ビュー・ピボット＆グリッド確認ビュー・個別パーツ一覧シートを1枚の画像として `workspace/03_preview/` に出力する |
 | `pack_spritesheet.py` | CLIツール | アニメーションの連番フレームPNG群を等間隔グリッドの1枚のスプライトシートPNGに結合し、汎用フレーム定義JSONを同時出力する |
 | `validate_assets.py` | CLIツール | `assets/` 配下のファイル命名規則（`snake_case`）、二値アルファ（半透明ゴミなし）、クロマキー残りなし、マスターパレット準拠、リグ／シートJSONの整合性を一括検証する |
@@ -72,6 +74,18 @@ canvas.save("assets/items/itm_potion_red.png")
 ---
 
 ## 2. 主なCLIコマンド使用例
+
+### サイズ規格 × テイスト別の定量仕様・検証済み素体マップの確認
+```powershell
+py tools/character_blueprints.py --list
+py tools/character_blueprints.py --info sfc_16x24 cool
+py tools/character_blueprints.py --show sfc_16x24 cool down
+```
+
+### キャラクタードット絵のプロポーション・造形スタイル検査
+```powershell
+py tools/lint_character_style.py assets/characters/chr_001_hero/spritesheets/chr_001_hero_sheet.png --frame 32x32 --size sfc_16x24 --taste cool --strict
+```
 
 ### 分割パーツの合成確認シート作成＋等倍ベース立ち絵保存
 ```powershell
