@@ -1,19 +1,24 @@
 # アセット種別 AI制作依頼プロンプト集
 
-人間がAIエージェントに対して設定集の作成やコードによるピクセルアート制作を依頼する際、コピー＆ペーストして `[ ]` を書き換えるだけで高品質な出力を得られる定型プロンプト集です。
+人間がAIエージェントに対して初期ヒアリング、設定集の作成、コードによるピクセルアート制作を依頼する際の定型プロンプト集です。
 
 ---
 
-## 1. 新規プロジェクトの設定集（`docs/`）を一括立ち上げする
+## 0. 新規プロジェクトを対話アンケートから始める（一番簡単な開始方法）
 
 ```text
-新しい2Dゲーム用のピクセルアート設定集を立ち上げたいです。
-`guidelines/` と `templates/` を参照し、以下のコンセプトに合わせて `docs/01_art_direction_and_world.md`、`docs/02_color_palette_spec.md`（および `assets/palettes/master_palette.json`）、`docs/03_character_list.md` の初期案を作成してください。
+新しい2Dゲーム用のピクセルアート制作を始めたいです。
+`AGENTS.md` の Phase 0 に従い、必須項目と任意項目に分けて初期ヒアリング（アンケート）を実施してください。
+回答後に `docs/00_project_brief.md` を作成し、続けて `docs/01_art_direction_and_world.md` と `docs/02_color_palette_spec.md`（および `assets/palettes/master_palette.json`）の提案まで進めてください。
+```
 
-- ジャンル: [例: 横スクロール2DアクションRPG]
-- 世界観イメージ: [例: 魔法と蒸気機関が混在する浮遊大陸の冒険]
-- 好みのドット絵スタイル: [例: prompts/style_presets.md の Preset A（3.5頭身・64x64基準）]
-- 最初に登場させたいキャラ・敵: [例: 主人公の少年剣士、相棒の機械妖精、雑魚敵の歯車スライム]
+---
+
+## 1. 記入済みの `docs/00_project_brief.md` から詳細設定集を展開させる
+
+```text
+`docs/00_project_brief.md` に初期方針を記入しました。
+内容を読み取り、「おまかせ（空欄）」の任意項目には最適な技術仕様を補完した上で、`templates/` をもとに `docs/01_art_direction_and_world.md`、`docs/02_color_palette_spec.md`（および `assets/palettes/master_palette.json`）、`docs/03_character_list.md` を作成してください。
 ```
 
 ---
